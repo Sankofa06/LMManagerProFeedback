@@ -1,0 +1,149 @@
+/* ── MOBILE OVERRIDES (max-width: 600px) ─────────────────── */
+@media (max-width: 600px) {
+
+  /* Bottom nav */
+  #bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: var(--bottom-nav-h);
+    background: var(--bg1);
+    border-top: 1px solid var(--bdr);
+    z-index: 500;
+    justify-content: space-around;
+    align-items: stretch;
+  }
+  .bn-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: .65rem;
+    color: var(--tx3);
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    transition: color .15s;
+  }
+  .bn-tab .bn-icon { font-size: 1.25rem; line-height: 1; }
+  .bn-tab.active { color: var(--accent); }
+
+  /* Roster master/detail */
+  #roster-master {
+    display: none;
+  }
+  #roster-master.visible {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  #roster-detail-panel {
+    display: none;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    border-left: none;
+  }
+  #roster-detail-panel.visible {
+    display: flex;
+  }
+
+  /* Team master/detail */
+  #teams-master {
+    display: none;
+  }
+  #teams-master.visible {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  #team-detail-panel {
+    display: none;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    border-left: none;
+  }
+  #team-detail-panel.visible {
+    display: flex;
+  }
+
+  /* Episode master/detail */
+  #episodes-master {
+    display: none;
+  }
+  #episodes-master.visible {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  #episode-detail-panel {
+    display: none;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    border-left: none;
+  }
+  #episode-detail-panel.visible {
+    display: flex;
+  }
+
+  /* Roster detail tab strip */
+  #roster-detail-tabs { overflow-x: auto; }
+  .rd-tab { flex: 0 0 auto; min-width: 64px; }
+
+  /* Chat topbar two-row layout */
+  #chat-topbar {
+    flex-wrap: wrap;
+    min-height: auto;
+    padding: 6px 10px;
+    gap: 5px;
+  }
+  #chat-topbar-left { width: 100%; }
+  #chat-topbar-right { width: 100%; justify-content: flex-start; }
+
+  /* Solo bar stacking */
+  #solo-bar { flex-wrap: wrap; }
+  #solo-model-select, #solo-scope-select { width: 100%; }
+
+  /* Nodes table column hiding */
+  .roster-table { grid-template-columns: 18px minmax(120px,1fr) 80px 60px; }
+  .roster-table .hide-mobile { display: none; }
+
+  /* Machines sidebar hidden on mobile (accessible via nav) */
+  #machines-bar { display: none; }
+  #machines-bar.mobile-open {
+    display: flex;
+    position: fixed;
+    top: 0; left: 0; bottom: var(--bottom-nav-h);
+    z-index: 600;
+    width: min(280px, 90vw);
+    box-shadow: 4px 0 24px rgba(0,0,0,.25);
+  }
+
+  /* Settings panel full-width */
+  #settings-panel { width: 100vw; }
+
+  /* Compare grid single column */
+  #compare-grid { grid-template-columns: 1fr; }
+}
+
+/* ── PORTRAIT TABLET ─────────────────────────────────────── */
+@media (orientation: portrait) and (max-width: 768px) {
+  #machines-bar { display: none; }
+  #machines-bar.tablet-open {
+    display: flex;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 600;
+    width: min(300px, 80vw);
+    box-shadow: 4px 0 24px rgba(0,0,0,.22);
+  }
+  .roster-table {
+    grid-template-columns: 18px minmax(140px,1fr) 100px 70px;
+  }
+  .roster-table .hide-tablet { display: none; }
+}
