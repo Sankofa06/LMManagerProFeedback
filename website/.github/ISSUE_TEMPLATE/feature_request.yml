@@ -1,0 +1,61 @@
+name: Feature Request
+description: Suggest a new feature or improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your idea! If you see an existing request that matches,
+        please 👍 it on the
+        [feedback page](https://sankofa06.github.io/LMManagerProFeedback/)
+        instead of opening a duplicate.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the friction or missing capability you're hitting today.
+      placeholder: When I run a long benchmark, I can't tell which persona is currently responding because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How would you like it to work? Sketches and mockups welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about, if any.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area would this affect?
+      options:
+        - Machines / model loading
+        - Chat (local LM Studio)
+        - Chat (cloud providers)
+        - Personas / Teams
+        - Episodes / benchmarks
+        - Compare mode
+        - Timeline
+        - Scoring / Leaderboard
+        - Voice
+        - Settings / Onboarding
+        - New surface (not yet in the app)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links, examples, or anything else that would help.

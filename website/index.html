@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LM Manager Pro — Feedback</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="brand"><img src="assets/icon.svg" alt="" width="28" height="28"> LM Manager Pro</a>
+      <nav>
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/sankofa06/lmmanagerpro" target="_blank" rel="noopener">App Repo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Feedback &amp; Feature Requests</h1>
+    <p class="tagline">Vote on existing ideas or submit a new one. All feedback is public via GitHub Issues.</p>
+
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Search feedback…" oninput="render()">
+      <select id="sort" onchange="render()">
+        <option value="newest">Newest</option>
+        <option value="oldest">Oldest</option>
+        <option value="reactions">Most reactions</option>
+        <option value="comments">Most comments</option>
+      </select>
+      <select id="label-filter" onchange="render()">
+        <option value="">All labels</option>
+      </select>
+      <select id="state-filter" onchange="loadIssues()">
+        <option value="open">Open</option>
+        <option value="closed">Closed</option>
+        <option value="all">All</option>
+      </select>
+      <a href="https://github.com/sankofa06/LMManagerProFeedback/issues/new/choose"
+         target="_blank" rel="noopener" class="btn-submit">Submit Feedback</a>
+    </div>
+
+    <div id="status-banner" class="status-banner" hidden></div>
+
+    <ul id="issue-list" aria-live="polite"></ul>
+  </main>
+
+  <footer>
+    <p>Powered by <a href="https://github.com/sankofa06/LMManagerProFeedback/issues" target="_blank" rel="noopener">GitHub Issues</a>
+      &middot; <a href="privacy.html">Privacy Policy</a></p>
+  </footer>
+
+  <script src="assets/feedback.js" defer></script>
+</body>
+</html>
