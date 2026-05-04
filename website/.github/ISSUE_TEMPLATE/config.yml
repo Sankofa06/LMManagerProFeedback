@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Privacy Policy
+    url: https://sankofa06.github.io/LMManagerProFeedback/privacy.html
+    about: Read the LM Manager Pro privacy policy.
+  - name: LM Studio Documentation
+    url: https://lmstudio.ai/docs
+    about: For questions about LM Studio itself (model loading, REST API, MLX vs GGUF).
