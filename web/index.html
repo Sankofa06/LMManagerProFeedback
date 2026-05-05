@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>LM Manager Pro Web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/panels.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="css/modals.css">
+</head>
+<body>
+<div id="app">
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div id="live-status" style="display:flex;gap:6px;align-items:center;flex:1;justify-content:center;min-width:0;overflow:hidden"></div>
+  <div id="machine-badges" style="display:none"></div>
+  <div id="topbar-session">
+    <span class="tracker-pill" data-mobile-lbl="▶"><span class="tk-lbl">RUNS</span><span class="tk-val" id="trk-runs">0</span></span>
+    <span class="tracker-pill" data-mobile-lbl="◆"><span class="tk-lbl">TOKENS</span><span class="tk-val" id="trk-tokens">0</span></span>
+    <span class="tracker-pill" data-mobile-lbl="⏱"><span class="tk-lbl">TIME</span><span class="tk-val" id="trk-time">0s</span></span>
+    <span class="tracker-pill" id="trk-vram-pill" data-mobile-lbl="▣"><span class="tk-lbl">VRAM</span><span class="tk-val" id="trk-vram">—</span></span>
+  </div>
+</div>
+
+<!-- TOPBAR ROW 2: session pills on mobile (hidden on desktop via CSS) -->
+<div id="topbar-row2">
+  <span class="tracker-pill"><span class="tk-lbl">RUNS</span><span class="tk-val" id="trk-runs-2">0</span></span>
+  <span class="tracker-pill"><span class="tk-lbl">TOKENS</span><span class="tk-val" id="trk-tokens-2">0</span></span>
+  <span class="tracker-pill"><span class="tk-lbl">TIME</span><span class="tk-val" id="trk-time-2">0s</span></span>
+  <span class="tracker-pill" id="trk-vram-pill-2"><span class="tk-lbl">VRAM</span><span class="tk-val" id="trk-vram-2">—</span></span>
+</div>
+
+<!-- SETUP PROMPT BANNER -->
+<div id="setup-banner" style="display:none;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid rgba(59,130,246,.2);flex-shrink:0;background:rgba(59,130,246,.08)">
+  <span id="setup-banner-icon" style="font-size:18px">💡</span>
+  <div style="flex:1;min-width:0">
+    <div id="setup-banner-msg" style="font-size:12px;color:var(--tx1);font-family:var(--mono);font-weight:600"></div>
+    <div id="setup-banner-sub" style="font-size:10px;color:var(--tx3);font-family:var(--mono);margin-top:2px;display:none"></div>
+  </div>
+  <button class="btn btn-sm btn-primary" id="setup-banner-btn" onclick="setupBannerAction()"></button>
+  <button style="background:none;border:none;color:var(--tx4);cursor:pointer;font-size:16px;padding:0 4px" onclick="document.getElementById('setup-banner').style.display='none'">✕</button>
+</div>
+<div id="body">
+
+  <!-- SIDEBAR (desktop) -->
+  <div id="leftnav">
+    <button class="nav-btn active" id="nav-machines" onclick="setNav('machines')" title="Machines">
+      <span>🖥</span>
+    </button>
+    <button class="nav-btn" id="nav-roster" onclick="setNav('roster')" title="Roster">
+      <span>👥</span>
+    </button>
+    <button class="nav-btn" id="nav-teams" onclick="setNav('teams')" title="Teams">
+      <span>⬡</span>
+    </button>
+    <button class="nav-btn" id="nav-episodes" onclick="setNav('episodes')" title="Episodes">
+      <span>🎬</span>
+    </button>
+    <button class="nav-btn" id="nav-run" onclick="setNav('run')" title="Chat">
+      <span>💬</span>
+    </button>
+    <button class="nav-btn" id="nav-survivor" onclick="setNav('survivor')" title="Scoreboard">
+      <span>🏆</span>
+    </button>
+    <button class="nav-btn" id="nav-timeline" onclick="setNav('timeline')" title="Timeline">
+      <span>🕒</span>
+    </button>
+    <button class="nav-btn" id="nav-settings" onclick="setNav('settings')" title="Settings">
+      <span>⚙</span>
+    </button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- ── MACHINES ── -->
+    <div class="panel active" id="panel-machines">
+      <div class="section-bar">
+        <span class="section-title">Inference Nodes</span>
+        <span class="section-sub" id="nodes-sub"></span>
+        <div class="section-actions">
+          <input class="search-inp" id="node-search" placeholder="Filter models…" oninput="filterRosterTable(this.value)" style="width:160px;border-radius:4px;padding:4px 10px">
+          <button class="btn btn-sm" onclick="openMachineModal()">⚙ Machines</button>
+          <button class="btn btn-sm" onclick="checkAllMachines()">↺ Check all</button>
+        </div>
+      </div>
+      <div id="machines-inner" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+        <div class="rt-thead">
+          <span class="rt-th"></span>
+          <span class="rt-th">Name · Model</span>
+          <span class="rt-th">Role</span>
+          <span class="rt-th">Size</span>
+          <span class="rt-th">Info</span>
+          <span class="rt-th">Actions</span>
+        </div>
+        <div class="rt-wrap" id="roster-table"></div>
+      </div>
+    </div>
+
+    <!-- ── ROSTER ── -->
+    <div class="panel" id="panel-roster">
+      <div id="roster-split">
+        <div id="roster-list">
+      <div class="section-bar" style="flex-shrink:0;position:relative">
+        <span class="section-title">Engineers</span>
+        <span id="roster-count" class="section-sub"></span>
+        <div class="section-actions">
+          <button class="btn btn-sm roster-iv-btn" onclick="openIvPromptModal()">🎤 Interview Q</button>
+          <button class="btn btn-sm btn-primary" onclick="openAddModelModal()">+ Add</button>
+          <!-- v8.3: overflow trigger (mobile only via CSS) -->
+          <button class="overflow-btn roster-overflow-btn" onclick="toggleRosterOverflow(event)" title="More" style="margin-left:2px">⋯</button>
+        </div>
+        <div id="archetype-legend" style="display:flex;gap:5px;margin-left:8px;flex-wrap:wrap"></div>
+        <!-- v8.5: family filter row -->
+        <div id="roster-family-bar" style="display:flex;align-items:center;gap:5px;padding:3px 14px 4px;flex-basis:100%;flex-wrap:wrap;border-top:1px solid var(--line)">
+          <span style="font-size:9px;font-family:var(--mono);color:var(--tx4);text-transform:uppercase;letter-spacing:.08em;flex-shrink:0">Arch</span>
+          <div id="roster-family-filter" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+        </div>
+        <!-- v8.5: sort row -->
+        <div id="roster-sort-bar" style="display:flex;align-items:center;gap:5px;padding:4px 14px;flex-basis:100%;flex-wrap:wrap">
+          <span style="font-size:9px;font-family:var(--mono);color:var(--tx4);text-transform:uppercase;letter-spacing:.08em;flex-shrink:0">Sort</span>
+          <button class="rs-sort-btn active" id="rsort-name"    onclick="setRosterSort('name')">Name</button>
+          <button class="rs-sort-btn"        id="rsort-role"    onclick="setRosterSort('role')">Role</button>
+          <button class="rs-sort-btn"        id="rsort-score"   onclick="setRosterSort('score')">Score</button>
+          <button class="rs-sort-btn"        id="rsort-size"    onclick="setRosterSort('size')">Size</button>
+          <button class="rs-sort-btn"        id="rsort-type"    onclick="setRosterSort('type')">Type</button>
+          <button class="rs-sort-btn"        id="rsort-arch"    onclick="setRosterSort('arch')">Arch</button>
+          <button class="rs-sort-btn"        id="rsort-family"  onclick="setRosterSort('family')">Family</button>
+          <button class="rs-sort-btn"        id="rsort-machine" onclick="setRosterSort('machine')">Machine</button>
+        </div>
+        <!-- v8.3: overflow menu (mobile) -->
+        <div class="overflow-menu" id="roster-overflow-menu">
+          <button onclick="closeRosterOverflow();openIvPromptModal()">🎤 Edit Interview Question</button>
+        </div>
+      </div>
+      <div class="search-bar" style="padding:5px 10px">
+        <input class="search-inp" id="roster-search" placeholder="Filter engineers…" oninput="filterRosterList(this.value)" style="flex:1;border-radius:4px;padding:4px 10px;font-size:11px">
+      </div>
+          <div id="roster-scroll"></div>
+        </div>
+        <div id="roster-detail">
+          <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--tx3);font-size:12px;font-family:var(--mono)">Select a model</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TEAMS ── -->
+    <div class="panel" id="panel-teams">
+      <div id="teams-split">
+        <div id="teams-list">
+          <div class="section-bar" style="flex-shrink:0">
+            <span class="section-title">Teams</span>
+            <div class="section-actions"><button class="btn btn-sm" onclick="addTeam()">+ New</button></div>
+          </div>
+          <div id="teams-scroll"></div>
+        </div>
+        <div id="team-detail">
+          <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--tx3);font-size:12px;font-family:var(--mono)">Select a team</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EPISODES ── -->
+    <div class="panel" id="panel-episodes">
+      <div class="section-bar">
+        <span class="section-title">Episodes</span>
+        <span class="section-sub" id="ep-panel-sub">Scenario builder</span>
+        <div class="section-actions">
+          <button class="btn btn-sm btn-primary" onclick="newEpisode()">+ New Episode</button>
+          <button class="btn btn-sm" onclick="triggerEpisodeImport()" title="Import a .json episode file">⬆ Import</button>
+          <input type="file" id="ep-import-file" accept=".json" style="display:none" onchange="importEpisode(event)">
+        </div>
+      </div>
+      <div id="episodes-split" style="display:flex;flex:1;overflow:hidden">
+        <!-- Episode list -->
+        <div id="episodes-list-wrap" style="width:220px;flex-shrink:0;border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--bg1)">
+          <div id="episode-list" style="flex:1;overflow-y:auto"></div>
+        </div>
+        <!-- Episode detail -->
+        <div id="episode-detail" style="flex:1;overflow-y:auto;background:var(--bg)">
+          <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--tx3);font-size:12px;font-family:var(--mono)">Select or create an episode</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GROUP CHAT ── -->
+    <div class="panel" id="panel-run">
+      <div id="chat-topbar">
+        <select id="run-team-select" onchange="selectRunTeam(this.value)" class="inp" style="font-size:12px;padding:5px 9px;flex:1;min-width:0">
+          <option value="">Select team…</option>
+        </select>
+        <div class="audience-toggle" title="Group: full team chat (counts toward score). 1:1 Solo: off-record chat with one model — doesn't affect the leaderboard.">
+          <button id="aud-group-btn" class="active" onclick="setAudience('group')">👥 Group</button>
+          <button id="aud-solo-btn" onclick="setAudience('solo')">👤 1:1</button>
+        </div>
+        <div class="mode-pill" id="mode-pill-wrap" title="AUTO: each agent responds in turn order automatically. MANUAL: you pick which agent fires next by clicking their chip.">
+          <button id="mode-auto-btn" onclick="setChatMode('auto')" class="active-auto">AUTO</button>
+          <button id="mode-manual-btn" onclick="setChatMode('manual')">MANUAL</button>
+        </div>
+        <button class="overflow-btn" id="chat-overflow-btn" onclick="toggleChatOverflow(event)" title="More">⋯</button>
+        <div class="overflow-menu" id="chat-overflow-menu">
+          <button onclick="closeChatOverflow();toggleCompareMode()">⚖ Toggle compare mode</button>
+          <button onclick="closeChatOverflow();toggleCrosstalk()" id="om-context-btn">👁 Context: ON</button>
+          <div class="om-divider"></div>
+          <button onclick="closeChatOverflow();openPresetModal()">📋 Manage presets</button>
+          <button onclick="closeChatOverflow();savePresetFromInput()">+ Save current as preset</button>
+          <div class="om-divider"></div>
+          <button onclick="closeChatOverflow();newEpisodeRun()">📌 New episode</button>
+          <button onclick="closeChatOverflow();clearActiveLog()">🗑 Clear log</button>
+          <div class="om-divider"></div>
+          <button onclick="closeChatOverflow();resetSessionTracker()">↺ Reset session stats</button>
+        </div>
+      </div>
+
+      <!-- v8.3: solo (1:1) selection bar — appears only in solo mode -->
+      <div class="solo-bar" id="solo-bar">
+        <span class="sb-label">Talk to</span>
+        <div class="sb-scope" id="solo-scope">
+          <button class="active" onclick="setSoloScope('team')">Team</button>
+          <button onclick="setSoloScope('global')">Global</button>
+        </div>
+        <select id="solo-model-select" onchange="selectSoloModel(this.value)">
+          <option value="">Select a model…</option>
+        </select>
+        <span class="solo-badge" title="Off-record: 1:1 messages don't affect the leaderboard, total score, or session stats.">OFF RECORD</span>
+        <button class="btn btn-sm" onclick="clearSoloLog()" style="margin-left:auto;font-size:10px">Clear</button>
+      </div>
+
+      <!-- Turn order + status fused into one slim bar -->
+      <div id="turn-order-bar">
+        <div id="turn-chips"></div>
+        <span class="chat-status" id="run-status-text">Idle</span>
+        <span id="round-counter"></span>
+      </div>
+
+      <!-- Group messages -->
+      <div id="run-log"></div>
+
+      <!-- v8.3: 1:1 solo message log -->
+      <div id="solo-log"></div>
+
+      <!-- Input -->
+      <div class="chat-input-bar">
+        <!-- Utility strip: compare + crosstalk + preset chips -->
+        <div id="chat-util-strip">
+          <button class="compare-toggle" id="compare-toggle-btn" onclick="toggleCompareMode()" title="Compare mode: fire all selected models on the same prompt side-by-side">⚖<span class="compare-text"> Compare</span></button>
+          <button class="btn btn-sm" id="crosstalk-toggle-btn" onclick="toggleCrosstalk()" title="Cross-talk: when ON, each agent sees all previous agents' replies. When OFF, agents only see the user prompt." style="font-size:10px;font-family:var(--mono)">👁 Context ON</button>
+          <div id="preset-chips" style="display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;flex:1;min-width:0"></div>
+        </div>
+        <div class="chat-input-inner">
+          <textarea id="run-prompt" rows="1" onkeydown="handleChatKey(event)" oninput="autoGrow(this)" placeholder="Message…"></textarea>
+          <div class="chat-btns">
+            <button id="run-btn" onclick="sendChatOrSolo()">Send ↑</button>
+            <button id="stop-btn" onclick="stopChat()">■ Stop</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SURVIVOR ── -->
+    <div class="panel" id="panel-survivor">
+      <div class="section-bar">
+        <span class="section-title">Leaderboard</span>
+        <span id="survivor-stats" class="section-sub"></span>
+        <div class="section-actions">
+          <!-- v8.4: view mode toggle -->
+          <div class="view-toggle">
+            <button id="sv-view-card" onclick="setSurvivorView('card')" title="Card grid">⊞</button>
+            <button id="sv-view-list" onclick="setSurvivorView('list')" class="active" title="Compact list">☰</button>
+          </div>
+          <span class="ep-badge" id="ep-badge">Ep 0</span>
+          <button class="btn btn-sm" onclick="clearImmunity()">Clear 👑</button>
+          <button class="btn btn-sm btn-danger" onclick="reviveAll()">Revive all</button>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+        </div>
+      </div>
+      <div style="padding:8px 14px;border-bottom:1px solid var(--line);background:var(--bg1);display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--tx3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">Sort by</span>
+        <button onclick="setBoardSort('score')" id="bsort-score" class="btn btn-sm" style="font-family:var(--mono);font-size:10px">★ Score</button>
+        <button onclick="setBoardSort('tps')"   id="bsort-tps"   class="btn btn-sm" style="font-family:var(--mono);font-size:10px">⚡ TPS</button>
+        <button onclick="setBoardSort('ep')"    id="bsort-ep"    class="btn btn-sm" style="font-family:var(--mono);font-size:10px">◈ Episodes</button>
+      </div>
+      <!-- v8.4: card grid (default) and compact list share the same container -->
+      <div class="survivor-grid" id="survivor-grid"></div>
+      <div class="survivor-list" id="survivor-list" style="display:none"></div>
+    </div>
+
+    <!-- ── TIMELINE ── -->
+    <div class="panel" id="panel-timeline">
+      <div class="section-bar">
+        <span class="section-title">Run Timeline</span>
+        <span class="section-sub" id="tl-stats">All runs</span>
+        <div class="section-actions">
+          <button class="btn btn-sm btn-danger" onclick="clearTimeline()">Clear</button>
+        </div>
+      </div>
+      <div class="tl-bar">
+        <input class="search-inp" id="tl-search" placeholder="Search prompt or response…" oninput="renderTimeline()" style="flex:1;max-width:320px">
+        <select class="inp" id="tl-filter-model" onchange="renderTimeline()" style="font-size:11px">
+          <option value="">All models</option>
+        </select>
+        <select class="inp" id="tl-filter-tag" onchange="renderTimeline()" style="font-size:11px">
+          <option value="">All categories</option>
+          <option value="Code">Code</option>
+          <option value="Reasoning">Reasoning</option>
+          <option value="Creative">Creative</option>
+          <option value="General">General</option>
+        </select>
+        <select class="inp" id="tl-sort" onchange="renderTimeline()" style="font-size:11px">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="quality">Highest quality</option>
+          <option value="speed">Fastest TPS</option>
+        </select>
+      </div>
+      <div class="tl-feed" id="tl-feed"></div>
+    </div>
+
+    <!-- ── PRESET MODAL ── -->
+    <div id="preset-modal" onclick="closePresetModal(event)">
+      <div class="preset-modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">Saved Prompts</div>
+          <button class="modal-close" onclick="document.getElementById('preset-modal').classList.remove('open')">✕</button>
+        </div>
+        <div style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:8px">
+          <input class="inp" id="preset-new-name" placeholder="Name (e.g. 'Swift actor refactor')" style="font-size:12px;flex:1">
+          <button class="btn btn-sm btn-primary" onclick="addPresetFromModal()">+ Add Current</button>
+        </div>
+        <div id="preset-modal-list" style="overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <!-- HTTPS BANNER (v8.1: copy rewritten — the old "Switch to HTTP" link was doomed because
+         browsers block http:// navigation from https:// pages. Banner now offers a help dialog. -->
+    <div id="https-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:2000;background:rgba(245,158,11,.95);backdrop-filter:blur(8px);padding:10px 16px;align-items:center;gap:10px;font-size:12px;font-family:var(--mono)">
+      <span style="font-size:16px">⚠</span>
+      <span style="flex:1;color:#000">Loaded over HTTPS — browsers will block requests to your <strong>http://</strong> LM Studio servers (mixed content).</span>
+      <button onclick="showHttpsHelp()" style="background:#000;color:#fff;padding:4px 12px;border-radius:6px;border:none;font-weight:700;white-space:nowrap;cursor:pointer;font-family:var(--mono);font-size:11px">How to fix</button>
+      <button onclick="document.getElementById('https-banner').style.display='none'" style="background:transparent;border:none;color:#000;font-size:16px;cursor:pointer;padding:0 4px">✕</button>
+    </div>
+
+    <!-- HTTPS HELP MODAL (v8.1) -->
+    <div id="https-help-modal" onclick="if(event.target.id==='https-help-modal')this.style.display='none'" style="display:none;position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--bg1);border:1px solid var(--line2);border-radius:12px;width:100%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px">⚠</span>
+          <div style="flex:1"><div style="font-size:14px;font-weight:700">Mixed content blocked</div><div style="font-size:11px;color:var(--tx3);font-family:var(--mono)">Browsers block http:// requests from https:// pages</div></div>
+          <button onclick="document.getElementById('https-help-modal').style.display='none'" class="btn btn-sm">✕</button>
+        </div>
+        <div style="padding:16px 18px;overflow-y:auto;font-size:13px;line-height:1.55;color:var(--tx2)">
+          <p style="margin-bottom:12px"><strong style="color:var(--tx1)">Pick one of these — most reliable first:</strong></p>
+          <ol style="margin-left:18px;display:flex;flex-direction:column;gap:14px">
+            <li>
+              <strong style="color:var(--tx1)">Save this page locally and open with file://</strong><br>
+              <span style="color:var(--tx3);font-size:11px;font-family:var(--mono)">File → Save As → save as <code style="background:var(--bg3);padding:1px 4px;border-radius:3px">index.html</code>, then double-click. file:// origins can talk to localhost without mixed-content blocking.</span>
+            </li>
+            <li>
+              <strong style="color:var(--tx1)">Serve over plain HTTP from the same machine</strong><br>
+              <span style="color:var(--tx3);font-size:11px;font-family:var(--mono)">In the folder containing the HTML: <code style="background:var(--bg3);padding:1px 4px;border-radius:3px">python3 -m http.server 8000</code> then visit <code style="background:var(--bg3);padding:1px 4px;border-radius:3px">http://localhost:8000/index.html</code>.</span>
+            </li>
+            <li>
+              <strong style="color:var(--tx1)">Allow insecure content for this site (Chrome only, not recommended)</strong><br>
+              <span style="color:var(--tx3);font-size:11px;font-family:var(--mono)">Click the lock icon in the address bar → Site settings → Insecure content → Allow. Reload. This persists per-origin.</span>
+            </li>
+            <li>
+              <strong style="color:var(--tx1)">Front your LM Studio servers with HTTPS</strong><br>
+              <span style="color:var(--tx3);font-size:11px;font-family:var(--mono)">Run a reverse proxy with a self-signed cert (Caddy, nginx) on each machine. Most work for the most flexibility.</span>
+            </li>
+          </ol>
+          <p style="margin-top:16px;font-size:11px;color:var(--tx3);font-family:var(--mono)">Note: clicking a link from this page to <code style="background:var(--bg3);padding:1px 4px;border-radius:3px">http://</code> won't work — modern browsers refuse to navigate downward to insecure origins. The fix has to happen at the page-load level.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MACHINE EDITOR MODAL -->
+    <div id="machine-modal" onclick="closeMachineModal(event)" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--bg1);border:1px solid var(--line2);border-radius:12px;width:100%;max-width:500px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">Manage Machines</div>
+          <button class="modal-close" onclick="document.getElementById('machine-modal').style.display='none'">✕</button>
+        </div>
+        <div id="machine-list-edit" style="overflow-y:auto;flex:1"></div>
+        <div style="padding:14px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:10px;color:var(--tx3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">Add Machine</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+            <input class="inp" id="nm-name" placeholder="Name (auto-fills from URL)" style="font-size:12px">
+            <input class="inp" id="nm-url"  placeholder="URL (e.g. http://192.168.1.x:1234)" style="font-size:12px" oninput="autoFillMachineName()">
+            <input class="inp" id="nm-vram" placeholder="VRAM GB (e.g. 16)" type="number" min="1" style="font-size:12px">
+            <input class="inp" id="nm-note" placeholder="Note (e.g. RTX 4090)" style="font-size:12px">
+          </div>
+          <button class="btn btn-primary" onclick="addMachineFromModal()" style="align-self:flex-end">+ Add Machine</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD MODEL MODAL -->
+    <div id="add-model-modal" onclick="if(event.target.id==='add-model-modal')closeAddModelModal()" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--bg1);border:1px solid var(--line2);border-radius:12px;width:100%;max-width:500px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">Add Engineer</div>
+          <button class="modal-close" onclick="closeAddModelModal()">✕</button>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto">
+          <!-- Name schema: First=family, Middle=params, Last=role, Nickname=display override -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div><div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">First <span style="color:var(--tx3);text-transform:none">family</span></div><input class="inp" id="am-first" placeholder="Qwen" style="width:100%;box-sizing:border-box" oninput="amAutoPrompt()"></div>
+            <div><div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Middle <span style="color:var(--tx3);text-transform:none">params</span></div><input class="inp" id="am-middle" placeholder="9B" style="width:100%;box-sizing:border-box" oninput="amAutoPrompt()"></div>
+            <div><div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Last <span style="color:var(--tx3);text-transform:none">role</span></div><input class="inp" id="am-last" placeholder="Senior Dev" style="width:100%;box-sizing:border-box" oninput="amAutoPrompt()"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Nickname <span style="color:var(--tx3);text-transform:none">· overrides display</span></div>
+              <input class="inp" id="am-nick" placeholder="Optional" style="width:100%;box-sizing:border-box" oninput="amAutoPrompt()">
+            </div>
+            <div><div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">ID (e.g. 32)</div><input class="inp" id="am-empid" placeholder="e.g. 32" style="width:100%;box-sizing:border-box"></div>
+          </div>
+          <div>
+            <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Role</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+              <div>
+                <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);margin-bottom:3px">Status</div>
+                <select class="inp" id="am-prof" style="width:100%;box-sizing:border-box" onchange="amSyncRole()">
+                  <option value="">— select —</option>
+                  ${STATUS_LEVELS.map(s=>`<option value="${s.id}">${s.label}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);margin-bottom:3px">Primary specialization</div>
+                <select class="inp" id="am-spec" style="width:100%;box-sizing:border-box" onchange="amSyncRole()">
+                  <option value="">— select —</option>
+                  ${SPECIALIZATIONS.map(s=>`<option value="${s.id}">${s.icon} ${s.label}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:7px">
+              <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);margin-bottom:4px">Secondary specializations <span style="color:var(--tx3);text-transform:none;font-size:9px">· optional · stackable</span></div>
+              <div id="am-secondary-chips" style="display:flex;flex-wrap:wrap;gap:5px">
+                ${SECONDARY_SPECS.map(s=>`<button type="button" id="am-sec-${s.id}" onclick="toggleAmSecondary('${s.id}')" style="font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--line2);background:var(--bg2);color:var(--tx3);cursor:pointer;font-family:var(--mono);transition:all .15s">${s.icon} ${s.label}</button>`).join('')}
+              </div>
+            </div>
+            <input type="hidden" id="am-role">
+            <div id="am-role-preview" style="font-size:10px;color:var(--tx3);font-family:var(--mono);margin-top:5px;min-height:14px"></div>
+          </div>
+          <!-- Persona name — character name in system prompt -->
+          <div>
+            <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">
+              Persona name <span style="color:var(--tx3);text-transform:none;letter-spacing:0;font-size:9px">· in system prompt (defaults to nickname or First Last)</span>
+            </div>
+            <input class="inp" id="am-persona" placeholder="Leave blank to auto-derive" style="width:100%;box-sizing:border-box" oninput="amAutoPrompt()">
+          </div>
+          <div><div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Model ID (LM Studio path) <span style="color:var(--accent);font-size:8px;text-transform:none;letter-spacing:0">&middot; auto-fills name ↑</span></div><input class="inp" id="am-model" placeholder="e.g. qwen3.5-9b or google/gemma-4-e4b" oninput="autoFillNameFromModelId();autoAssignMachineFromModelId()" style="width:100%;box-sizing:border-box"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div>
+              <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Machine</div>
+              <select class="inp" id="am-machine" style="width:100%;box-sizing:border-box"></select>
+              <div id="am-machine-hint" style="font-size:9px;color:var(--accent);font-family:var(--mono);margin-top:3px;min-height:12px;line-height:1.3"></div>
+            </div>
+            <div><div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Size (GB)</div><input class="inp" id="am-size" type="number" min="0.1" step="0.1" value="7" style="width:100%;box-sizing:border-box"></div>
+            <div><div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Temp</div><input class="inp" id="am-temp" type="number" min="0" max="1" step="0.05" value="0.5" style="width:100%;box-sizing:border-box"></div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+              <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">System Prompt <span style="color:var(--tx3);text-transform:none;letter-spacing:0;font-size:9px">· auto-generated · edit freely</span></div>
+              <button class="btn btn-sm" style="font-size:9px;padding:2px 7px" onclick="amAutoPrompt(true)">↺ Regenerate</button>
+            </div>
+            <textarea class="prompt-edit-area" id="am-prompt" style="min-height:80px" placeholder="You are [Name], a [role]. MIKE is the Director."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="addModelFromModal()" style="align-self:flex-end">+ Add Engineer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── V6.3: SCORE SHEET (slide-up) ── -->
+    <div id="score-sheet" onclick="if(event.target.id==='score-sheet')closeScoreSheet()">
+      <div class="score-sheet-card" onclick="event.stopPropagation()">
+        <div class="score-sheet-grip"></div>
+        <div class="score-sheet-hdr">
+          <div style="flex:1">
+            <div class="score-sheet-title" id="ss-title">Score Response</div>
+            <div class="score-sheet-sub" id="ss-sub">—</div>
+          </div>
+          <button class="btn btn-sm" onclick="openCriteriaModal()" title="Manage criteria">⚙</button>
+          <button class="modal-close" onclick="closeScoreSheet()">✕</button>
+        </div>
+        <div class="score-sheet-body" id="ss-body"></div>
+        <div class="score-sheet-summary">
+          <div>
+            <div class="score-sheet-avg-lbl">Average</div>
+            <div class="score-sheet-avg" id="ss-avg">—</div>
+          </div>
+          <div style="text-align:right">
+            <div class="score-sheet-avg-lbl">Auto</div>
+            <div style="font-size:14px;font-family:var(--mono);color:var(--tx2)" id="ss-auto">—/10</div>
+          </div>
+        </div>
+        <div class="score-sheet-actions">
+          <button class="btn btn-sm" onclick="resetScoreSheet()">↺ Reset</button>
+          <button class="btn btn-primary" onclick="closeScoreSheet()" style="margin-left:auto;flex:1;max-width:200px">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── V6.3: CRITERIA MANAGE MODAL ── -->
+    <div id="criteria-modal" onclick="if(event.target.id==='criteria-modal')document.getElementById('criteria-modal').style.display='none'" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--bg1);border:1px solid var(--line2);border-radius:12px;width:100%;max-width:500px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">Manage Criteria</div>
+          <button class="modal-close" onclick="document.getElementById('criteria-modal').style.display='none'">✕</button>
+        </div>
+        <div style="padding:14px 16px;flex:1;overflow-y:auto">
+          <div style="font-size:11px;color:var(--tx3);font-family:var(--mono);margin-bottom:12px;line-height:1.6">
+            Rename, remove, or add criteria. Changes apply globally — existing scores stay, new criteria show as unscored on past sessions.
+          </div>
+          <div id="criteria-list" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:flex;gap:8px">
+            <input class="inp" id="new-criterion-name" placeholder="New criterion name (e.g. Brevity)" style="flex:1;font-size:12px">
+            <button class="btn btn-primary" onclick="addCriterion()">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERVIEW PROMPT MODAL -->
+    <div id="iv-prompt-modal" onclick="if(event.target.id==='iv-prompt-modal')closeIvPromptModal()" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--bg1);border:1px solid var(--line2);border-radius:12px;width:100%;max-width:580px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">🎤 Global Interview Question</div>
+          <button class="modal-close" onclick="closeIvPromptModal()">✕</button>
+        </div>
+        <div style="padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:10px;overflow-y:auto">
+          <div style="font-size:11px;color:var(--tx3);font-family:var(--mono);line-height:1.6">
+            This prompt is sent as the <strong style="color:var(--tx2)">first user message</strong> in every new interview.
+            Each model's own system prompt (persona) is still active. Leave blank to start interviews with no default question.
+          </div>
+          <textarea class="prompt-edit-area" id="iv-prompt-textarea" style="min-height:200px;max-height:340px"></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button class="btn btn-primary" onclick="applyIvPrompt()">💾 Save &amp; apply to all interviews</button>
+            <button class="btn btn-sm" onclick="copyIvPrompt(this)">⎘ Copy</button>
+            <button class="btn btn-sm" onclick="resetIvPrompt()">↺ Reset to default</button>
+            <span style="font-size:10px;color:var(--tx3);font-family:var(--mono);margin-left:auto">Clears open interview threads</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- STATS MODAL -->
+    <div id="stats-modal" onclick="closeModal(event)">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div id="modal-avatar" style="width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--mono);flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div class="modal-title" id="modal-name">Stats</div>
+            <div style="font-size:11px;color:var(--tx3);font-family:var(--mono)" id="modal-sub"></div>
+          </div>
+          <button class="modal-close" onclick="document.getElementById('stats-modal').classList.remove('open')">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+
+  <!-- EMOJI PICKER MODAL -->
+  <div id="emoji-picker-modal" onclick="if(event.target.id==='emoji-picker-modal')closeEmojiPicker()" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--bg1);border:1px solid var(--line2);border-radius:12px;width:100%;max-width:380px;display:flex;flex-direction:column;overflow:hidden;max-height:80vh" onclick="event.stopPropagation()">
+      <div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:var(--tx1)" id="emoji-picker-title">Pick Emoji</span>
+        <button class="modal-close" onclick="closeEmojiPicker()" style="margin-left:auto">✕</button>
+      </div>
+      <div id="emoji-picker-grid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:2px;padding:10px;overflow-y:auto;flex:1"></div>
+    </div>
+  </div>
+    
+
+
+<!-- ── SETTINGS ── -->
+<div class="panel" id="panel-settings">
+  <div class="section-bar" style="flex-shrink:0">
+    <span class="section-title">Settings</span>
+  </div>
+  <div class="sp-body">
+
+    <!-- DISPLAY -->
+    <div class="sp-section" style="margin-top:18px">
+      <div class="sp-section-title">Display</div>
+      <div class="sp-row">
+        <label class="sp-label">Theme<small>Dark mode is the default. Light mode works but some colors are more saturated than intended — designed primarily for dark.</small></label>
+        <button class="btn btn-sm sp-ctrl" id="sp-theme-btn" onclick="toggleTheme();updateSettingsPanel()">🌙 Dark</button>
+      </div>
+    </div>
+
+    <!-- INFERENCE -->
+    <div class="sp-section">
+      <div class="sp-section-title">Inference</div>
+      <div class="sp-row">
+        <label class="sp-label">Max tokens<small>Maximum tokens per agent response. Higher = longer answers but slower. 8192 is a safe default for most models.</small></label>
+        <input class="inp sp-ctrl" id="gs-max-tokens" type="number" value="8192" min="100" max="32768" step="256" style="width:80px;font-size:12px" onchange="APP.maxTokens=parseInt(this.value)||8192;saveApp()">
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Request timeout<small>Seconds to wait before marking a request as failed. Increase for large models that are slow to load.</small></label>
+        <input class="inp sp-ctrl" id="sp-timeout" type="number" value="180" min="30" max="600" step="30" style="width:72px;font-size:12px" onchange="APP.requestTimeoutSec=parseInt(this.value)||180;saveApp()">
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Default temperature<small>Creativity/randomness fallback for models with no per-model temp set. 0 = deterministic, 1 = chaotic. Most tasks work best between 0.3–0.7.</small></label>
+        <input class="inp sp-ctrl" id="sp-default-temp" type="number" value="0.5" min="0" max="1" step="0.05" style="width:64px;font-size:12px" onchange="APP.defaultTemp=parseFloat(this.value)||0.5;saveApp()">
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Enable reasoning<small>Sends <code>reasoning: "on"</code> to the LM Studio v1 API. Models that support extended reasoning (DeepSeek R1, Qwen3, QwQ) will activate it. LM Studio silently ignores this for models that don't support it. Increases quality on hard tasks but costs more time and tokens.</small></label>
+        <input type="checkbox" id="sp-thinking" style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0" onchange="APP.thinkingEnabled=this.checked;saveApp()">
+      </div>
+    </div>
+
+    <!-- DIRECTOR -->
+    <div class="sp-section" style="margin-top:18px">
+      <div class="sp-section-title">Director</div>
+      <div class="sp-row">
+        <label class="sp-label">App name<small>The name shown in the topbar and browser tab. Cosmetic only.</small></label>
+        <input class="inp sp-ctrl" id="sp-brand-name" type="text" value="LM Manager Pro Web" style="width:120px;font-size:12px" onchange="applyBrandName(this.value)">
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Director name<small>Replaces "MIKE" in every auto-generated persona prompt. Set this to your own name so models address you correctly during interviews and group chat.</small></label>
+        <input class="inp sp-ctrl" id="sp-director-name" type="text" value="MIKE" style="width:100px;font-size:12px" onchange="applyDirectorName(this.value)">
+      </div>
+      <div class="sp-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+        <label class="sp-label" style="margin-bottom:0">Global system suffix<small>A sentence appended to every auto-generated prompt. Use this for project-wide context every model should know — e.g. the tech stack, the app name, your coding style. Only applied to non-overridden prompts.</small></label>
+        <textarea class="prompt-edit-area sp-ctrl" id="sp-global-suffix" style="min-height:56px;max-height:100px;width:100%;font-size:11px" placeholder="e.g. We are building Sample Project, a TypeScript service-oriented platform across web, mobile, and CLI clients." onchange="APP.globalSuffix=this.value.trim();saveApp()"></textarea>
+      </div>
+    </div>
+
+    <!-- LM LINK -->
+    <div class="sp-section" style="margin-top:18px">
+      <div class="sp-section-title">LM Link · Device Map</div>
+      <div style="font-size:11px;color:var(--tx3);line-height:1.5;margin-bottom:10px">
+        Paste the output of <code style="font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:3px">lms ls --json</code> from any linked machine. The app will detect each device hash and let you assign it to a machine.
+      </div>
+      <div class="sp-row" style="margin-bottom:8px">
+        <label class="sp-label">Run <code style="font-family:var(--mono);font-size:10px">lms ls --json</code> on<small>Which machine did you run this command on? Models with no device hash belong to it.</small></label>
+        <select class="inp sp-ctrl" id="lmlink-local-machine" style="font-size:11px" onchange="APP.lmLinkLocalMachine=this.value;saveApp()">
+          <option value="">— select —</option>
+        </select>
+      </div>
+      <textarea id="lmlink-paste" class="prompt-edit-area" placeholder="Paste lms ls --json output here…" style="min-height:72px;max-height:120px;font-size:10px;font-family:var(--mono)" oninput="parseLmLinkJson(this.value)"></textarea>
+      <div id="lmlink-device-rows" style="display:flex;flex-direction:column;gap:6px;margin-top:8px"></div>
+      <div id="lmlink-status" style="font-size:10px;font-family:var(--mono);color:var(--tx4);margin-top:4px"></div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center">
+        <button class="btn btn-primary btn-sm" id="settings-scan-btn" onclick="settingsScanRoster()">🔍 Scan Roster</button>
+        <span style="font-size:10px;color:var(--tx4);font-family:var(--mono)">Check All machines then open the new models modal</span>
+      </div>
+    </div>
+
+    <!-- ROSTER -->
+    <div class="sp-section" style="margin-top:18px">
+      <div class="sp-section-title">Roster</div>
+      <div class="sp-row">
+        <label class="sp-label">Default machine<small>Pre-selected in the Add Engineer modal. Set this to whichever machine you add models to most often.</small></label>
+        <select class="inp sp-ctrl" id="sp-default-machine" style="font-size:11px" onchange="APP.defaultMachine=this.value;saveApp()">
+          <option value="">— none —</option>
+        </select>
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Auto-generate names<small>Parses model IDs to fill First (family name) and Middle (param count) for everyone. Won't overwrite fields you've already set. Use "Force all" in the confirm dialog to overwrite everything.</small></label>
+        <button class="btn btn-sm sp-ctrl" onclick="autoGenerateAllNames()">⚙ Generate</button>
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Sync model data from LM Studio<small>Updates file size and param count for every roster entry using live metadata from the last Check All. Run "Check All" first. Names and roles are untouched.</small></label>
+        <button class="btn btn-sm sp-ctrl" onclick="syncModelDataFromApi()">↺ Sync data</button>
+      </div>
+    </div>
+
+    <!-- ROLES -->
+    <div class="sp-section" style="margin-top:18px;padding-bottom:20px">
+      <div class="sp-section-title">Roles</div>
+      <div style="font-size:11px;color:var(--tx3);line-height:1.6;margin-bottom:8px">Roles are built from three layers. Status sets color saturation (Unhired = neutral gray, Flagship = full color). Primary specialization sets the color family and main prompt line. Secondary specializations add focused function lines on top.</div>
+      <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Status × Primary</div>
+      <div id="sp-roles-grid" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px"></div>
+      <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 4px">Secondary specializations <span style="text-transform:none;letter-spacing:0">· stackable · each adds a prompt line</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px" id="sp-secondary-grid"></div>
+      <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 4px">Custom roles</div>
+      <div id="custom-roles-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+      <button class="btn btn-sm" onclick="openCustomRoleModal()">+ Add Custom Role</button>
+    </div>
+
+    <!-- INTERVIEW -->
+    <div class="sp-section" style="margin-top:18px">
+      <div class="sp-section-title">Interview</div>
+      <div class="sp-row">
+        <label class="sp-label">Auto-clear history on model swap<small>When switching between models in the interview tab, wipes their conversation history so each starts fresh. Useful when running the same prompt across the whole roster.</small></label>
+        <input type="checkbox" id="sp-iv-autoclear" style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0" onchange="APP.interviewAutoClear=this.checked;saveApp()">
+      </div>
+
+      <!-- Builder -->
+      <div style="margin-top:12px;border:1px solid var(--line);border-radius:8px;overflow:hidden">
+
+        <!-- §1 Opening — auto -->
+        <div style="padding:9px 12px;background:var(--bg2);border-bottom:1px solid var(--line)">
+          <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">1 · Opening <span style="text-transform:none;letter-spacing:0;color:var(--tx3)">· auto from Director settings above</span></div>
+          <div id="sp-iv-opening" style="font-size:11px;color:var(--tx2);font-family:var(--mono)"></div>
+        </div>
+
+        <!-- §2 Product -->
+        <div style="padding:9px 12px;border-bottom:1px solid var(--line)">
+          <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">2 · Product <span style="text-transform:none;letter-spacing:0;color:var(--tx3)">· what you're building</span></div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
+            <button onclick="setIvProductPreset('sample')" id="sp-iv-pp-sample" class="btn btn-sm" style="font-size:10px;padding:3px 9px">📋 Sample</button>
+            <button onclick="setIvProductPreset('ios_app')"   id="sp-iv-pp-ios_app"   class="btn btn-sm" style="font-size:10px;padding:3px 9px">📱 iOS app</button>
+            <button onclick="setIvProductPreset('custom')"    id="sp-iv-pp-custom"    class="btn btn-sm" style="font-size:10px;padding:3px 9px">✏ Custom</button>
+          </div>
+          <textarea class="prompt-edit-area" id="sp-iv-product" style="min-height:60px;max-height:120px;width:100%;font-size:11px"
+            placeholder="Leave blank to omit this section."
+            oninput="onIvProductChange(this.value)"></textarea>
+        </div>
+
+        <!-- §3 Stack -->
+        <div style="padding:9px 12px;border-bottom:1px solid var(--line)">
+          <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">3 · Stack <span style="text-transform:none;letter-spacing:0;color:var(--tx3)">· tech environment</span></div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
+            <button onclick="setIvStackPreset('swift_mvvm')" id="sp-iv-sp-swift_mvvm" class="btn btn-sm" style="font-size:10px;padding:3px 9px">Swift MVVM</button>
+            <button onclick="setIvStackPreset('react_ts')"   id="sp-iv-sp-react_ts"   class="btn btn-sm" style="font-size:10px;padding:3px 9px">React/TS</button>
+            <button onclick="setIvStackPreset('python')"     id="sp-iv-sp-python"     class="btn btn-sm" style="font-size:10px;padding:3px 9px">Python</button>
+            <button onclick="setIvStackPreset('node')"       id="sp-iv-sp-node"       class="btn btn-sm" style="font-size:10px;padding:3px 9px">Node</button>
+            <button onclick="setIvStackPreset('flutter')"    id="sp-iv-sp-flutter"    class="btn btn-sm" style="font-size:10px;padding:3px 9px">Flutter</button>
+            <button onclick="setIvStackPreset('unity')"      id="sp-iv-sp-unity"      class="btn btn-sm" style="font-size:10px;padding:3px 9px">Unity</button>
+            <button onclick="setIvStackPreset('custom')"     id="sp-iv-sp-custom"     class="btn btn-sm" style="font-size:10px;padding:3px 9px">✏ Custom</button>
+          </div>
+          <textarea class="prompt-edit-area" id="sp-iv-stack" style="min-height:50px;max-height:100px;width:100%;font-size:11px"
+            placeholder="Leave blank to omit."
+            oninput="onIvStackChange(this.value)"></textarea>
+          <textarea class="prompt-edit-area" id="sp-iv-stack-extra" style="min-height:36px;max-height:80px;width:100%;font-size:11px;margin-top:5px"
+            placeholder="Add extra stack context here (e.g. specific libraries, tools, constraints)…"
+            oninput="APP.ivStackExtra=this.value;saveApp();rebuildAndSaveInterviewPrompt()"></textarea>
+        </div>
+
+        <!-- §4 Team — auto-generated -->
+        <div style="padding:9px 12px;border-bottom:1px solid var(--line)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+            <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">4 · Team <span style="text-transform:none;letter-spacing:0;color:var(--tx3)">· auto-generated from roster</span></div>
+            <button class="btn btn-sm" style="font-size:9px;padding:2px 7px" onclick="refreshIvTeamPreview()">↺ Refresh</button>
+          </div>
+          <div id="sp-iv-team-auto" style="font-size:11px;color:var(--tx3);font-family:var(--mono);line-height:1.5;margin-bottom:6px;padding:6px 8px;background:var(--bg);border:1px solid var(--line);border-radius:5px;min-height:24px"></div>
+          <textarea class="prompt-edit-area" id="sp-iv-team-override" style="min-height:40px;max-height:80px;width:100%;font-size:11px"
+            placeholder="Override auto-generated text (leave blank to use auto)…"
+            oninput="APP.ivTeamOverride=this.value;saveApp();rebuildAndSaveInterviewPrompt()"></textarea>
+        </div>
+
+        <!-- §5 Ask -->
+        <div style="padding:9px 12px;border-bottom:1px solid var(--line)">
+          <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">5 · Closing ask <span style="text-transform:none;letter-spacing:0;color:var(--tx3)">· what you want to learn</span></div>
+          <textarea class="prompt-edit-area" id="sp-iv-postamble" style="min-height:56px;max-height:100px;width:100%;font-size:11px"
+            oninput="APP.ivPostamble=this.value;saveApp();rebuildAndSaveInterviewPrompt()"></textarea>
+        </div>
+
+        <!-- Preview -->
+        <div style="padding:9px 12px;background:var(--bg1)">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+            <span style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Preview</span>
+            <button class="btn btn-sm" style="font-size:9px;padding:2px 7px;margin-left:auto" onclick="resetInterviewPromptToDefault()">↺ Reset all</button>
+          </div>
+          <div id="sp-iv-preview" style="font-size:10px;color:var(--tx3);font-family:var(--mono);line-height:1.6;white-space:pre-wrap;max-height:140px;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px"></div>
+          <button class="btn btn-sm" id="sp-iv-copy-btn" onclick="copyInterviewPrompt()" style="margin-top:8px;width:100%;font-size:11px;padding:6px">Copy prompt</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP CHAT -->
+    <div class="sp-section" style="margin-top:18px">
+      <div class="sp-section-title">Group Chat</div>
+      <div class="sp-row">
+        <label class="sp-label">Max rounds<small>How many times the full team speaks before the run ends. 1 = everyone speaks once. Increase for debate or iterative refinement tasks.</small></label>
+        <input class="inp sp-ctrl" id="gs-max-rounds" type="number" value="1" min="1" max="20" style="width:64px;font-size:12px" onchange="APP.maxRounds=parseInt(this.value)||1;saveApp()">
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">History depth<small>How many prior messages each model receives as context. Full history is best for continuity but expensive on token count. "Prompt only" makes every agent respond fresh to just the original question.</small></label>
+        <select class="inp sp-ctrl" id="gs-history" style="font-size:11px" onchange="APP.historyDepth=this.value;saveApp()">
+          <option value="all">Full history</option>
+          <option value="6">Last 6 msgs</option>
+          <option value="4">Last 4 msgs</option>
+          <option value="2">Last 2 msgs</option>
+          <option value="0">Prompt only</option>
+        </select>
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Pause between agents<small>Delay in seconds between each model's response. Useful for reading along in real time, or for rate-limited endpoints.</small></label>
+        <input class="inp sp-ctrl" id="gs-pause" type="number" value="0" min="0" max="30" style="width:64px;font-size:12px" onchange="APP.pauseBetweenAgentsSec=parseFloat(this.value)||0;saveApp()">
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Skip voted-off models<small>Voted-off models (0 torches) are excluded from group chat runs. Disable to include everyone regardless of torch count.</small></label>
+        <input type="checkbox" id="gs-skip-fired" checked style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0" onchange="APP.skipVotedOff=this.checked;saveApp()">
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Cross-talk<small>When on, each model receives the prior models' replies as context — they can react to each other. When off, every model only sees the original prompt, like a blind survey.</small></label>
+        <input type="checkbox" id="gs-crosstalk" checked style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0" onchange="APP.crossTalk=this.checked;saveApp()">
+      </div>
+    </div>
+
+    <!-- EPISODES -->
+    <div class="sp-section" style="margin-top:18px">
+      <div class="sp-section-title">Episodes</div>
+      <div class="sp-row">
+        <label class="sp-label">Auto-advance after Score block<small>By default, episodes pause at Score blocks so you can rate responses before continuing. Enable this to skip the pause and keep running — scores are deferred until after the episode completes.</small></label>
+        <input type="checkbox" id="sp-ep-autoadvance" style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0" onchange="APP.epAutoAdvance=this.checked;saveApp()">
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Default block timeout<small>Seconds before an individual task block is marked failed if the model doesn't respond. Set higher for large models on slow machines.</small></label>
+        <input class="inp sp-ctrl" id="sp-ep-timeout" type="number" value="120" min="10" max="600" step="10" style="width:72px;font-size:12px" onchange="APP.epBlockTimeout=parseInt(this.value)||120;saveApp()">
+      </div>
+    </div>
+
+    <!-- SCORING -->
+    <div class="sp-section" style="margin-top:18px">
+      <div class="sp-section-title">Scoring</div>
+
+      <!-- Manual score sheet -->
+      <div class="sp-row">
+        <label class="sp-label">Manual score sheet<small>When you rate a response you score it 1–5 on each criterion below. The average becomes the manual score for that session. Appears on the score sheet after each run.</small></label>
+        <button class="btn btn-sm sp-ctrl" onclick="toggleSettingsPanel();openCriteriaModal()">Manage ⚙</button>
+      </div>
+
+      <!-- Auto-score signals -->
+      <div style="margin-top:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:10px;color:var(--tx3);font-family:var(--mono)">Auto-score signals — each response is scored automatically 0–10</div>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-sm" style="font-size:9px;padding:2px 7px" onclick="setScorePreset('balanced')">Balanced</button>
+            <button class="btn btn-sm" style="font-size:9px;padding:2px 7px" onclick="setScorePreset('speed')">Speed</button>
+            <button class="btn btn-sm" style="font-size:9px;padding:2px 7px" onclick="setScorePreset('quality')">Quality</button>
+            <button class="btn btn-sm" style="font-size:9px;padding:2px 7px" onclick="setScorePreset('reasoning')">Reasoning</button>
+          </div>
+        </div>
+
+        <div id="score-signals-list"></div>
+
+        <!-- Weight total indicator -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding:6px 10px;background:var(--bg2);border-radius:6px;border:1px solid var(--line)">
+          <span style="font-size:10px;color:var(--tx3);font-family:var(--mono)">Total weight</span>
+          <span id="score-weight-total" style="font-size:12px;font-weight:700;font-family:var(--mono)">100%</span>
+        </div>
+      </div>
+
+      <!-- Reference card -->
+      <div style="margin-top:10px">
+        <button class="btn btn-sm" style="width:100%;font-size:10px" onclick="toggleScoringRef()">ℹ How scoring works</button>
+        <div id="scoring-ref" style="display:none;margin-top:8px;border:1px solid var(--line);border-radius:7px;overflow:hidden;font-size:10px;font-family:var(--mono);line-height:1.7;color:var(--tx3)">
+          <div style="padding:10px 12px;border-bottom:1px solid var(--line);background:var(--bg2)">
+            <div style="font-weight:700;color:var(--tx1);margin-bottom:4px">How auto-score works</div>
+            Each signal rates the response ★1–★5 based on its thresholds. Stars are weighted by their % importance and combined into a 0–10 score. Formula: <span style="color:var(--accent)">(stars/5) × weight% × 10</span>, summed across all signals.
+          </div>
+          <div style="padding:10px 12px;border-bottom:1px solid var(--line)">
+            <div style="font-weight:700;color:var(--tx1);margin-bottom:4px">Leaderboard ranking</div>
+            The leaderboard score is a <strong style="color:var(--tx2)">source-weighted aggregate</strong>:<br>
+            <span style="color:var(--blue)">Auto-score 20%</span> · <span style="color:var(--amber)">Interview sessions 30%</span> · <span style="color:var(--accent)">Team chat sessions 50%</span><br>
+            Sources with no data are excluded and the remaining ones are rescaled to 100%.
+          </div>
+          <div style="padding:10px 12px;border-bottom:1px solid var(--line)">
+            <div style="font-weight:700;color:var(--tx1);margin-bottom:4px">Refusal penalty</div>
+            Any response containing "I'm sorry", "I can't", "I cannot", or "as an AI" gets a <span style="color:var(--red)">−0.5 penalty</span>.
+          </div>
+          <div style="padding:10px 12px;border-bottom:1px solid var(--line)">
+            <div style="font-weight:700;color:var(--tx1);margin-bottom:4px">Think token signal is inverted</div>
+            Fewer think tokens = more stars. It measures efficiency, not effort. Set its weight to 0% when evaluating reasoning-heavy tasks.
+          </div>
+          <div style="padding:10px 12px">
+            <div style="font-weight:700;color:var(--tx1);margin-bottom:4px">Prompt classification</div>
+            Each prompt is auto-classified as <span style="color:#3b82f6">Code</span>, <span style="color:#f59e0b">Reasoning</span>, <span style="color:#f43f5e">Creative</span>, or <span style="color:#22c55e">General</span>. Shown in the roster detail. No effect on scoring.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="sp-section" style="margin-top:18px">
+      <div class="sp-section-title">Leaderboard</div>
+      <div class="sp-row">
+        <label class="sp-label">Default sort<small>How engineers are ranked when you open the leaderboard. Score uses the combined auto-score average.</small></label>
+        <select class="inp sp-ctrl" id="sp-board-sort" style="font-size:11px" onchange="setBoardSort(this.value)">
+          <option value="score">★ Score</option>
+          <option value="tps">⚡ TPS</option>
+          <option value="ep">◈ Episodes</option>
+        </select>
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Default view<small>Card grid shows rich detail per model. Compact list fits more on screen for quick comparison.</small></label>
+        <select class="inp sp-ctrl" id="sp-survivor-view" style="font-size:11px" onchange="APP.survivorView=this.value;saveApp();setSurvivorView(this.value)">
+          <option value="card">⊞ Card grid</option>
+          <option value="list">☰ Compact list</option>
+        </select>
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Show voted-off models<small>When off, models with 0 torches are hidden from the leaderboard entirely. Useful once the roster gets large.</small></label>
+        <input type="checkbox" id="sp-show-voted" checked style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0" onchange="APP.survivorShowVoted=this.checked;saveApp();renderSurvivorIf()">
+      </div>
+    </div>
+
+    <!-- DATA -->
+    <div class="sp-section" style="margin-top:18px;padding-bottom:20px">
+      <div class="sp-section-title">Data</div>
+
+      <!-- Roster data -->
+      <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin:4px 0 8px">Roster</div>
+      <div class="sp-row">
+        <label class="sp-label">Backup<small>Exports roster, teams, stats &amp; timeline. Use before big changes or a new season.</small></label>
+        <button class="btn btn-sm sp-ctrl" onclick="exportData()">⬇ Export</button>
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Restore<small>Overwrites current roster &amp; stats with a backup file. Cannot be undone.</small></label>
+        <button class="btn btn-sm sp-ctrl" onclick="triggerImport()">⬆ Import</button>
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Export persona prompts<small>Clean roster + prompts only — no scores or sessions. Hand to an AI to review or rewrite, then import back.</small></label>
+        <button class="btn btn-sm sp-ctrl" onclick="exportPrompts()">⬇ Prompts</button>
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Import persona prompts<small>Updates prompts only. Matches by ID, then employee ID, then model path. Scores untouched.</small></label>
+        <button class="btn btn-sm sp-ctrl" onclick="triggerImportPrompts()">⬆ Prompts</button>
+        <input type="file" id="import-prompts-file" accept=".json" style="display:none" onchange="importPrompts(event)">
+      </div>
+
+      <!-- Full app data -->
+      <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px">Full app</div>
+      <div class="sp-row">
+        <label class="sp-label">Full export<small>Everything — roster, teams, machines, episodes, settings, custom roles, and presets in one file.</small></label>
+        <button class="btn btn-sm sp-ctrl" onclick="exportFullApp()">⬇ Full export</button>
+      </div>
+      <div class="sp-row">
+        <label class="sp-label">Full restore<small>Restores a full export. Overwrites all data including machines and settings. Cannot be undone.</small></label>
+        <button class="btn btn-sm sp-ctrl" onclick="triggerFullImport()">⬆ Full restore</button>
+        <input type="file" id="import-full-file" accept=".json" style="display:none" onchange="importFullApp(event)">
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+
+      <!-- Danger zone -->
+      <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Danger zone</div>
+        <div class="sp-row">
+          <label class="sp-label">Reset all stats<small>Zeroes scores, sessions, timeline, and episode count. Sets everyone to Unhired. Roster config, teams, machines, and presets are kept.</small></label>
+          <button class="btn btn-sm btn-danger sp-ctrl" onclick="resetAllStats()">↺ Reset stats</button>
+        </div>
+        <div class="sp-row">
+          <label class="sp-label">Clear roster<small>Removes all models from the roster. Machines, teams, settings, and presets are kept. Cannot be undone.</small></label>
+          <button class="btn btn-sm btn-danger sp-ctrl" onclick="clearRoster()">🗑 Clear roster</button>
+        </div>
+        <div class="sp-row">
+          <label class="sp-label">Wipe all data<small>Deletes everything — roster, teams, machines, scores, episodes, presets. App reloads blank. Double-confirmed. Cannot be undone.</small></label>
+          <button class="btn btn-sm btn-danger sp-ctrl" onclick="wipeAllData()">☢ Wipe all</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+  </div><!-- /content -->
+</div><!-- /body -->
+
+<!-- BOTTOM NAV (mobile only) -->
+<div id="bottomnav" style="display:none">
+  <button class="bn-btn active" id="bn-machines" onclick="setNav('machines');setBnActive('bn-machines')">🖥<span>Nodes</span></button>
+  <button class="bn-btn" id="bn-roster"   onclick="setNav('roster');setBnActive('bn-roster')">👥<span>Roster</span></button>
+  <button class="bn-btn" id="bn-teams"    onclick="setNav('teams');setBnActive('bn-teams')">⬡<span>Teams</span></button>
+  <button class="bn-btn" id="bn-episodes" onclick="setNav('episodes');setBnActive('bn-episodes')">🎬<span>Episodes</span></button>
+  <button class="bn-btn" id="bn-run"      onclick="setNav('run');setBnActive('bn-run')">💬<span>Chat</span></button>
+  <button class="bn-btn" id="bn-survivor" onclick="setNav('survivor');setBnActive('bn-survivor')">🏆<span>Board</span></button>
+  <button class="bn-btn" id="bn-timeline" onclick="setNav('timeline');setBnActive('bn-timeline')">🕒<span>Log</span></button>
+  <button class="bn-btn" id="bn-settings" onclick="setNav('settings');setBnActive('bn-settings')">⚙<span>Settings</span></button>
+</div>
+
+
+
+
+  </div>
+</div>
+
+
+
+    <!-- NEW MODEL DISCOVERY MODAL -->
+    <div id="new-models-modal" onclick="if(event.target.id==='new-models-modal')closeNewModelsModal()" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--bg1);border:1px solid var(--line2);border-radius:12px;width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title" id="nm-modal-title">🆕 New Models Detected</div>
+          <button class="modal-close" onclick="closeNewModelsModal()">✕</button>
+        </div>
+        <div style="padding:10px 16px;border-bottom:1px solid var(--line);font-size:11px;color:var(--tx3);font-family:var(--mono)" id="nm-modal-sub"></div>
+        <div id="nm-modal-list" style="overflow-y:auto;flex:1;padding:10px 16px;display:flex;flex-direction:column;gap:8px"></div>
+        <div style="padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-sm" onclick="closeNewModelsModal()">Dismiss</button>
+          <button class="btn btn-sm btn-primary" onclick="addAllDiscovered()">+ Add All</button>
+        </div>
+      </div>
+    </div>
+</div><!-- /app -->
+
+<script src="js/constants.js"></script>
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/nav-machines.js"></script>
+<script src="js/roster.js"></script>
+<script src="js/teams.js"></script>
+<script src="js/chat-panel.js"></script>
+<script src="js/settings-interview-builder.js"></script>
+<script src="js/scoring.js"></script>
+<script src="js/survivor-utils.js"></script>
+<script src="js/theme-compare.js"></script>
+<script src="js/interview-solo.js"></script>
+<script src="js/machine-crud.js"></script>
+<script src="js/lmlink.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/status-discovery.js"></script>
+<script src="js/episodes-branding.js"></script>
+<script src="js/init.js"></script>
+<!-- CUSTOM ROLE MODAL -->
+<div id="custom-role-modal" onclick="if(event.target.id==='custom-role-modal')closeCustomRoleModal()" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg1);border:1px solid var(--line2);border-radius:12px;width:100%;max-width:480px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Add Custom Role</div>
+      <button class="modal-close" onclick="closeCustomRoleModal()">✕</button>
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto">
+      <div style="font-size:11px;color:var(--tx3);line-height:1.6">Custom roles extend the built-in proficiency &times; specialization grid. You must provide prompt language so the canned sentences stay consistent.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Proficiency</div>
+          <select class="inp" id="cr-prof" style="width:100%;box-sizing:border-box">
+            <option value="">— built-in —</option>
+            <option value="custom">✦ Custom…</option>
+          </select>
+          <input class="inp" id="cr-prof-label" placeholder="Custom proficiency label" style="width:100%;box-sizing:border-box;margin-top:5px;display:none">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Specialization</div>
+          <select class="inp" id="cr-spec" style="width:100%;box-sizing:border-box">
+            <option value="">— built-in —</option>
+            <option value="custom">✦ Custom…</option>
+          </select>
+          <input class="inp" id="cr-spec-label" placeholder="Custom specialization label" style="width:100%;box-sizing:border-box;margin-top:5px;display:none">
+        </div>
+      </div>
+      <div id="cr-preview" style="font-size:12px;font-weight:700;font-family:var(--mono);color:var(--tx2);padding:6px 10px;background:var(--bg2);border-radius:6px;min-height:26px"></div>
+      <div>
+        <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Prompt language <span style="color:var(--red)">*required</span></div>
+        <textarea class="prompt-edit-area" id="cr-prompt" style="min-height:80px" placeholder="e.g. Your primary strength is audio synthesis and DSP pipeline design. Focus on real-time constraints and low-latency implementations."></textarea>
+        <div style="font-size:9px;color:var(--tx3);margin-top:4px">This sentence is appended to the system prompt for every model assigned this role.</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-sm" onclick="closeCustomRoleModal()">Cancel</button>
+        <button class="btn btn-sm btn-primary" onclick="saveCustomRole()">Save Role</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

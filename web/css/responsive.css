@@ -1,0 +1,330 @@
+/* ── PORTRAIT / MOBILE ── */
+@media (max-width: 600px) {
+  :root { --nav-w: 0px; --topbar-h: 44px; }
+  #leftnav { display: none; }
+  #bottomnav {
+    display: flex !important;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 62px;
+    background: var(--bg1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--line);
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  #app { padding-bottom: calc(62px + env(safe-area-inset-bottom)); }
+  .bn-btn {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px; border: none; background: transparent;
+    color: var(--tx3); font-size: 22px; transition: color .15s;
+    min-width: 44px; padding: 6px 2px;
+  }
+  .bn-btn span { font-size: 10px; font-family: var(--mono); font-weight: 500; }
+  .bn-btn.active { color: var(--accent); }
+  .bn-btn.active span { color: var(--accent); }
+  /* hide machine badges on mobile */
+  #machine-badges { display: none !important; }
+  .brand-tag { display: none; }
+  /* roster: stack layout */
+  /* ── V8.3: ROSTER MASTER/DETAIL on portrait ── */
+  /* On mobile, the rd-desktop-top wrapper is "transparent" so info/edit/interview
+     are siblings of the tab strip, and tab visibility works correctly. */
+  .rd-desktop-top { display: contents; max-height: none; border-bottom: none; overflow: visible; }
+  /* Default state on mobile: list takes full screen, detail hidden */
+  #roster-split { flex-direction: column; }
+  #roster-list {
+    width: 100%; height: auto; flex: 1;
+    border-right: none; border-bottom: none;
+  }
+  #roster-detail { display: none; }
+  /* When a model is focused (data-focus="1"), list hides and detail takes over */
+  #roster-split[data-focus="1"] #roster-list { display: none; }
+  #roster-split[data-focus="1"] #roster-detail {
+    display: flex; flex-direction: column; flex: 1; min-height: 0;
+  }
+  /* Beefier list rows */
+  .roster-row { padding: 11px 14px; gap: 11px; min-height: 56px; }
+  .r-avatar { width: 36px; height: 36px; }
+  .r-name { font-size: 13px; }
+  .r-role { font-size: 10px; }
+  /* Score + TPS column on the right */
+  .r-stats {
+    display: flex; flex-direction: column; align-items: flex-end;
+    gap: 2px; flex-shrink: 0; min-width: 52px;
+  }
+  .r-score {
+    font-size: 13px; font-weight: 700; font-family: var(--mono);
+    color: var(--tx1); letter-spacing: -.02em;
+  }
+  .r-score.dim { color: var(--tx4); font-weight: 500; }
+  .r-tps { font-size: 9px; font-family: var(--mono); color: var(--tx3); }
+  /* Roster section bar — keep tight, but wrappable */
+  #panel-roster .section-bar { gap: 6px; }
+  #panel-roster .section-actions { gap: 4px; flex-wrap: nowrap; overflow-x: auto; }
+  #panel-roster .section-actions .btn { flex-shrink: 0; }
+  /* Hide Interview Q button on mobile (lives in roster overflow menu instead) */
+  #panel-roster .roster-iv-btn { display: none; }
+  #panel-roster .roster-overflow-btn { display: inline-flex; }
+  /* Archetype legend — horizontal scroll strip below section bar */
+  #archetype-legend {
+    flex-wrap: nowrap !important; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-left: 0 !important; padding-bottom: 2px;
+  }
+  #roster-sort-bar { padding: 3px 10px; gap: 4px; }
+  .rs-sort-btn { font-size: 9px; padding: 2px 6px; }
+  /* ── V8.3: TEAMS MASTER/DETAIL on portrait ── */
+  /* Default: list takes full screen, detail hidden until a team is focused */
+  #teams-split { flex-direction: column; }
+  #teams-list {
+    width: 100%; height: auto; flex: 1;
+    border-right: none; border-bottom: none;
+  }
+  #team-detail { display: none; }
+  #teams-split[data-focus="1"] #teams-list { display: none; }
+  #teams-split[data-focus="1"] #team-detail {
+    display: flex; flex-direction: column; flex: 1; min-height: 0;
+  }
+  /* Beefier team rows */
+  .team-row { padding: 12px 14px; min-height: 56px; }
+  .team-icon { font-size: 22px; }
+  .team-name-t { font-size: 14px; }
+  .team-sub-t { font-size: 11px; }
+  /* Team detail: tab strip + back + tab gating */
+  .td-back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg2); border: 1px solid var(--line2);
+    color: var(--tx1); font-size: 13px; font-weight: 600;
+    padding: 8px 12px; border-radius: 8px; cursor: pointer;
+    margin-right: auto;
+  }
+  .td-back-btn:hover { background: var(--bg3); }
+  .td-tab-strip {
+    display: flex; flex-shrink: 0;
+    background: var(--bg1); border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  .td-tab {
+    flex: 1; padding: 12px 8px; min-width: 90px;
+    font-size: 12px; font-weight: 600; font-family: var(--sans);
+    background: transparent; border: none; border-bottom: 2px solid transparent;
+    color: var(--tx3); cursor: pointer; transition: all .15s;
+    white-space: nowrap;
+  }
+  .td-tab:hover { color: var(--tx2); }
+  .td-tab.active { color: var(--tx1); border-bottom-color: var(--accent); }
+  /* Tab panes — only the active one is visible on mobile */
+  .td-pane { display: none; }
+  .td-pane.active { display: block; flex: 1; overflow-y: auto; }
+  /* Team header (icon + name + Run/Delete) sits above the tab strip on mobile —
+     stays sticky so user can always Run from any tab */
+  .td-header {
+    flex-shrink: 0; padding: 12px 14px;
+    border-bottom: 1px solid var(--line); background: var(--bg1);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+
+  /* ── V8.4: EPISODES MASTER/DETAIL on portrait (replaces v8.3 rules) ── */
+  /* Default: list takes full screen, detail hidden until an episode is focused */
+  #episodes-split { flex-direction: column; }
+  #episodes-list-wrap {
+    width: 100% !important; flex: 1 !important;
+    border-right: none !important; border-bottom: none !important;
+    min-height: 0; overflow: hidden;
+  }
+  #episode-detail { display: none; }
+  #episodes-split[data-focus="1"] #episodes-list-wrap { display: none; }
+  #episodes-split[data-focus="1"] #episode-detail {
+    display: flex; flex-direction: column; flex: 1; min-height: 0;
+  }
+  /* On mobile the episode-detail inner content area must scroll */
+  #episode-detail > .ep-detail-body { flex: 1; overflow-y: auto; }
+  /* Sticky add-block bar stays pinned at the bottom */
+  #episode-detail .ep-add-bar { position: sticky; bottom: 0; }
+  /* Beefier episode rows */
+  .ep-row { padding: 12px 14px; min-height: 56px; }
+  .ep-row-icon { font-size: 22px; }
+  .ep-row-name { font-size: 14px; }
+  .ep-row-sub { font-size: 11px; }
+  /* Episode section bar: keep both New + Import, scroll if needed */
+  #panel-episodes .section-bar { gap: 6px; }
+  #panel-episodes .section-actions { flex-wrap: nowrap; overflow-x: auto; gap: 5px; }
+  #panel-episodes .section-actions .btn { flex-shrink: 0; }
+  /* Episode back button shown on mobile */
+  .ep-back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg2); border: 1px solid var(--line2);
+    color: var(--tx1); font-size: 13px; font-weight: 600;
+    padding: 8px 12px; border-radius: 8px; cursor: pointer;
+    flex-shrink: 0;
+  }
+  .ep-back-btn:hover { background: var(--bg3); }
+  /* Episode detail header: two rows on mobile */
+  .ep-detail-hdr { flex-wrap: wrap; gap: 8px !important; }
+  .ep-detail-hdr .ep-hdr-row1 {
+    display: flex; align-items: center; gap: 8px;
+    flex-basis: 100%; min-width: 0;
+  }
+  .ep-detail-hdr .ep-hdr-row2 {
+    display: flex; align-items: center; gap: 6px;
+    flex-basis: 100%; flex-wrap: wrap;
+  }
+  .ep-detail-hdr .ep-hdr-row2 .btn { font-size: 11px; padding: 6px 11px; }
+  .ep-detail-hdr .ep-hdr-row2 select.inp { flex: 1; min-width: 100px; font-size: 12px; }
+  /* Add-block bar: horizontal scroll so buttons never wrap onto 2 lines */
+  .ep-add-bar { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .ep-add-bar .btn { flex-shrink: 0; }
+  .ep-add-bar > span { display: none; } /* hide "Add block" label to save space */
+  /* Nodes page: table columns on tablet portrait */
+  .rt-thead, .rt-row {
+    grid-template-columns: 14px 1fr 72px 88px;
+  }
+  /* hide Role (col 3) and Size (col 4) — keep dot, name, info, actions */
+  .rt-th:nth-child(3), .rt-row > *:nth-child(3),
+  .rt-th:nth-child(4), .rt-row > *:nth-child(4) { display: none; }
+  /* prevent info chip overflowing its column */
+  .rt-machine-cell { overflow: hidden; }
+  .rt-machine-cell button { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  /* rt-section header: on portrait, URL input drops to its own row */
+  .rt-section { flex-wrap: wrap; gap: 5px; padding: 7px 12px; }
+  .rt-machine-url { order: 10; flex-basis: 100%; max-width: 100% !important; }
+  /* hide mc-nodes-bar (now removed but keep rule for safety) */
+  .mc-nodes-bar { flex-direction: column; }
+  .mc-node { min-width: 0; }
+  .mc-node-url { width: 130px; font-size: 10px; }
+
+  /* ── V8.3: ROSTER DETAIL TAB STRIP (mobile only) ── */
+  .rd-back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg2); border: 1px solid var(--line2);
+    color: var(--tx1); font-size: 13px; font-weight: 600;
+    padding: 8px 12px; border-radius: 8px; cursor: pointer;
+    margin-right: auto;
+  }
+  .rd-back-btn:hover { background: var(--bg3); }
+  .rd-tab-strip {
+    display: flex; flex-shrink: 0;
+    background: var(--bg1); border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  .rd-tab {
+    flex: 1; padding: 12px 8px; min-width: 90px;
+    font-size: 12px; font-weight: 600; font-family: var(--sans);
+    background: transparent; border: none; border-bottom: 2px solid transparent;
+    color: var(--tx3); cursor: pointer; transition: all .15s;
+    white-space: nowrap;
+  }
+  .rd-tab:hover { color: var(--tx2); }
+  .rd-tab.active { color: var(--tx1); border-bottom-color: var(--accent); }
+  /* Tab panes — only the active one is visible on mobile */
+  .rd-pane { display: none; flex-direction: column; min-height: 0; }
+  .rd-pane.active { display: flex; flex: 1; }
+  /* On mobile, info pane should NOT cap at 52% — let it take what it needs and scroll */
+  .rd-pane.rd-info-pane {
+    overflow-y: auto; max-height: none;
+  }
+  /* Interview pane fills the tab on mobile */
+  .rd-pane.rd-interview-pane { flex: 1; }
+
+  /* ── V8.3: CHAT TOPBAR — clean two-row layout (mobile) ── */
+  #chat-topbar {
+    padding: 6px 10px; gap: 7px; min-height: 0;
+  }
+  #chat-topbar .overflow-btn {
+    display: inline-flex;
+  }
+  #chat-topbar #run-team-select {
+    flex: 1; min-width: 0;
+    font-size: 13px; padding: 7px 8px;
+  }
+  /* hide topbar session pills on mobile — they move to #topbar-row2 */
+  #topbar-session { display: none; }
+  /* ── second header row: session tracker pills ── */
+  #topbar-row2 {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    flex-shrink: 0;
+    background: var(--bg1);
+    border-bottom: 1px solid var(--line);
+    padding: 0 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #topbar-row2::-webkit-scrollbar { display: none; }
+  #topbar-row2 .tracker-pill {
+    flex-shrink: 0;
+  }
+  /* util strip: stack compare+crosstalk icon-only, hide preset chips overflow */
+  #chat-util-strip { padding: 4px 10px; gap: 5px; }
+  #chat-util-strip .compare-text { display: none; }
+  #chat-util-strip #crosstalk-toggle-btn { font-size: 9px; padding: 2px 7px; }
+  #chat-util-strip .compare-toggle { padding: 3px 9px; font-size: 10px; }
+  .preset-chip { font-size: 9px; padding: 2px 7px; }
+  /* turn order bar tighter */
+  #turn-order-bar { padding: 4px 10px; }
+
+  /* v8.3: Solo bar — three-row stack for clarity:
+     row 1: "Talk to" label
+     row 2: scope toggle + model dropdown (full width)
+     row 3: OFF RECORD badge + Clear button */
+  .solo-bar { padding: 8px 12px; gap: 6px; }
+  .solo-bar .sb-label { flex-basis: 100%; order: 1; }
+  .solo-bar .sb-scope { order: 2; }
+  #solo-model-select { flex: 1; min-width: 0; order: 3; }
+  .solo-badge { order: 4; flex-basis: auto; }
+  .solo-bar > button.btn { order: 5; }
+
+  /* chat input */
+  .chat-input-bar { padding-bottom: env(safe-area-inset-bottom); }
+  .chat-input-inner { border-radius: 14px; padding: 10px 12px 10px 16px; margin: 8px 10px 10px; }
+  #run-prompt { font-size: 16px; min-height: 26px; } /* 16px prevents iOS auto-zoom on focus */
+  #run-btn { padding: 9px 18px; font-size: 13px; }
+
+  /* messages — wider bubbles in portrait */
+  #run-log { padding: 14px 12px 10px; gap: 14px; }
+  .b-body { max-width: 88%; }
+  .b-bubble { padding: 10px 13px; font-size: 14px; line-height: 1.6; }
+  .b-avatar { width: 28px; height: 28px; }
+  /* solo log similar treatment */
+  #solo-log { padding: 14px 12px 10px; gap: 12px; }
+  .solo-msg .s-bubble { max-width: 86%; font-size: 14px; }
+  .solo-msg .s-avatar { width: 28px; height: 28px; }
+
+  /* survivor grid */
+  .survivor-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); padding: 12px; }
+  /* section bar wraps cleanly on mobile */
+  .section-bar { padding: 8px 12px; min-height: 0; }
+  /* compare button — icon only on small screens (util strip) */
+  .compare-toggle .compare-text { display: none; }
+  /* mode pill smaller */
+  .mode-pill button { padding: 4px 11px; font-size: 11px; }
+  /* turn order bar — tighten */
+  #turn-order-bar { padding: 5px 10px; }
+  /* Episodes / roster panels — make headings tighter */
+  .section-title { font-size: 12px; }
+  .section-sub { font-size: 10px; }
+}
+
+/* ── V8.3: PORTRAIT-SPECIFIC (any width, taller than wide) ── */
+@media (orientation: portrait) and (max-width: 768px) {
+  /* Slight padding tweaks for thumb reach */
+  .chat-input-bar { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  /* Pull chat input inner closer to bottom */
+  .chat-input-inner { box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+}
+
+@media (max-width: 400px) {
+  .rt-thead, .rt-row { grid-template-columns: 12px 1fr 84px; }
+  .rt-th:nth-child(3), .rt-row > *:nth-child(3),
+  .rt-th:nth-child(4), .rt-row > *:nth-child(4),
+  .rt-th:nth-child(5), .rt-row > *:nth-child(5) { display: none; }
+  /* row padding tighter on smallest screens */
+  .rt-row { padding: 7px 10px; }
+  .rt-section { padding: 6px 10px; }
+}
+
