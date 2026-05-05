@@ -1,82 +1,168 @@
-/* state.js — global state & roster initialization */
-
-let ROSTER = JSON.parse(localStorage.getItem('lmmp-roster') || 'null');
-if (!ROSTER) {
-  ROSTER = DEFAULT_ROSTER.map(r => ({ ...r }));
-  localStorage.setItem('lmmp-roster', JSON.stringify(ROSTER));
-}
-
-let TEAMS = JSON.parse(localStorage.getItem('lmmp-teams') || 'null');
-if (!TEAMS) {
-  TEAMS = DEFAULT_TEAMS.map(t => ({ ...t }));
-  localStorage.setItem('lmmp-teams', JSON.stringify(TEAMS));
-}
-
-let PRESETS = JSON.parse(localStorage.getItem('lmmp-presets') || '[]');
-let TIMELINE = JSON.parse(localStorage.getItem('lmmp-timeline') || '[]');
-
-const state = JSON.parse(localStorage.getItem('lmmp-state') || 'null') || {
-  nav: 'survivor',
-  selRoster: null,
-  selTeam: null,
-  runTeam: null,
-  epCount: 0,
-  theme: 'auto',
-  compareMode: false,
-  sessionTracker: {},
-  boardSort: 'score',
-  archetypeFilter: null,
-  familyFilter: null,
-  selEpisode: null,
-  archivedChats: {},
-  collapsedMachines: {},
-};
-
-// ensure new state keys
-if (state.boardSort === undefined) state.boardSort = 'score';
-if (state.archetypeFilter === undefined) state.archetypeFilter = null;
-if (state.familyFilter === undefined) state.familyFilter = null;
-if (state.selEpisode === undefined) state.selEpisode = null;
-if (state.archivedChats === undefined) state.archivedChats = {};
-if (state.collapsedMachines === undefined) state.collapsedMachines = {};
-if (state.sessionTracker === undefined) state.sessionTracker = {};
-
-// Roster migrations
-ROSTER.forEach(r => {
-  if (r.secondaryIds === undefined) r.secondaryIds = [];
-  if (r.interviewPrompt === undefined) r.interviewPrompt = '';
-  if (r.temp === undefined) r.temp = 0.7;
-  if (r.topP === undefined) r.topP = 1;
-  if (r.maxTokens === undefined) r.maxTokens = 2048;
-  if (r.criteriaScores === undefined) r.criteriaScores = {};
-  if (r.chatLog === undefined) r.chatLog = [];
-  if (r.torch === undefined) r.torch = false;
-  if (r.immune === undefined) r.immune = false;
+/* ── STATE ── */
+let ROSTER=JSON.parse(localStorage.getItem('lmmp_v5_roster')||'null')||DEFAULT_ROSTER;
+let TEAMS=JSON.parse(localStorage.getItem('lmmp_v5_teams')||'null')||DEFAULT_TEAMS;
+let PRESETS=JSON.parse(localStorage.getItem('lmmp_v5_presets')||'null')||[
+  {id:'p1',name:'Swift 6 actor refactor',text:'Refactor this code to use Swift 6 strict concurrency with actor isolation. Identify any data races first, then propose the fix.'},
+  {id:'p2',name:'Reactions parsing',text:"Write a JS function that fetches GitHub issue reactions and returns counts per emoji. Handle both array and object response formats."},
+  {id:'p3',name:'Aviation history',text:'Describe three pivotal aircraft from the Golden Age of Aviation (1918–1939) and what each contributed to the industry.'},
+  {id:'p4',name:'Quick math',text:"If a player builds 8 aircraft per quarter at $24M unit cost and sells at $32M, what's the annual gross margin?"},
+];
+let TIMELINE=JSON.parse(localStorage.getItem('lmmp_v5_timeline')||'null')||[];
+let state={nav:'machines',selRoster:null,selTeam:null,runTeam:null,epCount:parseInt(localStorage.getItem('lmmp_v5_ep')||'0'),theme:localStorage.getItem('lmmp_v5_theme')||'dark',compareMode:false,sessionTracker:{runs:0,tokens:0,timeMs:0,peakVram:0},boardSort:'score',archetypeFilter:null,familyFilter:null,selEpisode:null,archivedChats:JSON.parse(localStorage.getItem('lmmp_v7_archived')||'[]'),collapsedMachines:new Set()};
+ROSTER.forEach(r=>{
+  if(r.totalScore===undefined)r.totalScore=0;
+  if(r.episodes===undefined)r.episodes=0;
+  if(r.immunity===undefined)r.immunity=false;
+  // migrate legacy color names → archetype hex
+  if(r.color&&!r.color.startsWith('#'))r.color=archetypeColor(r.role);
+  // sanitize corrupt avgTps / avgTtft (Infinity or NaN from old sessions)
+  if(!isFinite(r.avgTps)||isNaN(r.avgTps))r.avgTps=0;
+  if(!isFinite(r.avgTtft)||isNaN(r.avgTtft))r.avgTtft=0;
+  // scrub bad tps values from stored sessions and recompute avgTps from scratch
+  if(r.sessions&&r.sessions.length){
+    r.sessions.forEach(s=>{
+      const t=parseFloat(s.tps);
+      if(!isFinite(t)||isNaN(t)||t<=0)s.tps='—';
+    });
+    // recompute avgTps from clean session data
+    const validTps=r.sessions.map(s=>parseFloat(s.tps)).filter(t=>isFinite(t)&&t>0);
+    r.avgTps=validTps.length?validTps.reduce((a,b)=>a+b,0)/validTps.length:0;
+  }
 });
 
-function deduplicateRosterMachines() {
-  ROSTER.forEach(r => {
-    if (!Array.isArray(r.secondaryIds)) r.secondaryIds = [];
-    const seen = new Set();
-    if (r.machine) seen.add(r.machine);
-    r.secondaryIds = r.secondaryIds.filter(id => {
-      if (seen.has(id)) return false;
-      seen.add(id); return true;
+// ── ROSTER DUPLICATE MACHINE REASSIGNMENT ──
+// If two roster entries share the same model ID on the same machine (can happen from
+// old scan logic that used format as part of the dedup key), reassign the second entry
+// to the correct machine using live availableModels data. Safe to call at any time;
+// no-ops if there are no duplicates or if machine data isn't available yet.
+function deduplicateRosterMachines(){
+  // Group roster entries by model ID
+  const byModel={};
+  ROSTER.forEach(r=>{
+    if(!byModel[r.model])byModel[r.model]=[];
+    byModel[r.model].push(r);
+  });
+  let changed=false;
+  Object.values(byModel).forEach(group=>{
+    if(group.length<2)return;
+    // Find entries that share the same machine — these are the bad duplicates
+    const seenMachines=new Set();
+    group.forEach(r=>{
+      if(seenMachines.has(r.machine)){
+        // This entry is a duplicate on the same machine — try to find another machine
+        // that actually has this model in its availableModels list
+        const otherMc=MACHINES.find(mc=>
+          mc.id!==r.machine &&
+          mc.status==='online' &&
+          mc.availableModels?.includes(r.model) &&
+          !group.some(g=>g!==r&&g.machine===mc.id) // don't assign to a machine already used by another entry in this group
+        );
+        if(otherMc){
+          console.log(`[dedup] Reassigning ${r.model} (${r.id}) from ${r.machine} → ${otherMc.id}`);
+          r.machine=otherMc.id;
+          changed=true;
+        }
+      } else {
+        seenMachines.add(r.machine);
+      }
     });
   });
+  if(changed){save();renderRosterTable();renderRoster();}
 }
+// Run at load time (pre-Check All — won't reassign until availableModels is populated)
 deduplicateRosterMachines();
 
-function saveRoster() {
-  localStorage.setItem('lmmp-roster', JSON.stringify(ROSTER));
+
+// Get rich metadata for a roster entry — merges live API data with parsed fallbacks
+function getModelMeta(r){
+  const ownMc=MACHINES.find(x=>x.id===r.machine);
+  let api={};
+  // Check own machine first — if that machine has metadata for this model, use it.
+  // Only fall back to other machines if own machine has no data yet (pre-Check All).
+  if(ownMc?.modelMeta?.[r.model]){
+    api=ownMc.modelMeta[r.model];
+  } else {
+    for(const mc of MACHINES){
+      if(mc.id!==r.machine&&mc.modelMeta?.[r.model]){api=mc.modelMeta[r.model];break;}
+    }
+  }
+  const path=(r.model||'').toLowerCase();
+
+  // TYPE: Start with API report, then sanity-check against platform.
+  // LM Studio sometimes mis-reports compatibility_type (e.g. returns "mlx" for a GGUF
+  // on a CUDA machine). Platform is physical ground truth — CUDA cannot run MLX,
+  // Apple silicon cannot run GGUF — so platform wins when they contradict.
+  let type=api.type||api.format||null;
+  if(ownMc?.platform==='cuda' && type==='MLX') type='GGUF';   // impossible on CUDA
+  if(ownMc?.platform==='apple' && type==='GGUF') type='MLX';  // impossible on Apple (without special tooling)
+  if(!type){
+    // No API data yet (pre-Check All) — infer from platform then path
+    if(ownMc?.platform==='apple')type='MLX';
+    else if(ownMc?.platform==='cuda')type='GGUF';
+    else if(path.includes('mlx'))type='MLX';
+    else if(path.endsWith('.gguf'))type='GGUF';
+  }
+
+  // QUANT: API string > path parsing (broadened to catch custom formats)
+  let quant='';
+  const rawApiQ=api.quant;
+  if(rawApiQ&&typeof rawApiQ==='string'&&rawApiQ.length<30&&!/object/i.test(rawApiQ)){
+    quant=rawApiQ;
+  }
+  if(!quant){
+    if(type==='GGUF'){
+      // Standard GGUF quants: Q4_K_M, Q6_K, Q8_0, IQ3_M, F16 etc
+      const qm=path.match(/[_.-](q[0-9][_a-z0-9]*|iq[0-9][_a-z]*|f16|f32|bf16)/i);
+      if(qm)quant=qm[1].toUpperCase();
+    } else if(type==='MLX'){
+      // Standard: 4bit, 8bit, 4-bit, 8-bit
+      const bm=path.match(/[_.-]([0-9]+)[_-]?bit/i)||path.match(/([0-9]+)bit/i);
+      if(bm)quant=bm[1]+'-bit';
+      // Named MLX formats
+      else if(path.includes('dwq'))quant='DWQ';
+      else if(path.includes('optiq'))quant='OptiQ';
+      else if(path.includes('rotorquant'))quant='RotorQ';
+      // Generic: anything after last hyphen that looks like a format tag
+      else{
+        const parts=path.split(/[-_]/);
+        const last=parts[parts.length-1];
+        if(last&&last!=='mlx'&&last.length<=8&&!/^\d+$/.test(last))quant=last.toUpperCase();
+      }
+    }
+    // Catch any named format in path regardless of type (heretic, abliterated etc are fine to show)
+    if(!quant){
+      const custom=path.match(/[_.-](rotorquant|dwq|optiq|heretic|abliterated|uncensored)/i);
+      if(custom)quant=custom[1].charAt(0).toUpperCase()+custom[1].slice(1).toLowerCase();
+    }
+  }
+
+  // PARAMS: paramsStr ("26B-A4B") > paramsBillion > r.middle > path
+  let paramsLabel=api.paramsStr||null;
+  if(!paramsLabel&&api.paramsBillion)paramsLabel=fmtParams(api.paramsBillion);
+  if(!paramsLabel&&r.middle)paramsLabel=r.middle;
+  if(!paramsLabel){
+    const pm=path.match(/(?<![a-z])([\d]+\.?[\d]*)b(?![a-z])/i);
+    if(pm)paramsLabel=fmtParams(parseFloat(pm[1]));
+  }
+
+  // ARCHITECTURE: string only
+  let arch=api.architecture||null;
+  if(arch&&typeof arch!=='string')arch=null;
+
+  // CONTEXT
+  const ctx=api.contextLength||null;
+  const ctxLabel=ctx
+    ?(ctx>=131072?'128K':ctx>=65536?'64K':ctx>=32768?'32K':ctx>=16384?'16K':ctx>=8192?'8K':ctx.toLocaleString())
+    :null;
+
+  // FILE SIZE
+  const fileSizeGB=api.sizeBytes?(api.sizeBytes/1073741824).toFixed(2):null;
+
+  return{type,quant,paramsLabel,arch,ctxLabel,fileSizeGB,
+    publisher:api.publisher||null,
+    displayName:api.displayName||null,
+    vision:api.vision||false,
+    functionCalling:api.functionCalling||false};
 }
 
-function saveTeams() {
-  localStorage.setItem('lmmp-teams', JSON.stringify(TEAMS));
-}
-
-function getModelMeta(modelId) {
-  // Returns family, archetype hints from modelId string
-  const id = (modelId || '').toLowerCase();
-  return { id, raw: modelId };
-}
+// Format params nicely: 9.0→9B, 27.3→27B, 0.5→500M etc
