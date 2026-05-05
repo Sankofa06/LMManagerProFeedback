@@ -1,0 +1,84 @@
+name: Bug Report
+description: Something is broken or not working as expected.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill out the
+        sections below so we can reproduce and fix it quickly.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: When I tap "Load" on a model, the app...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps so we can recreate the issue.
+      placeholder: |
+        1. Open LM Manager Pro
+        2. Go to Machines
+        3. Tap "..."
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: I expected the model to load and appear in the loaded list.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area is affected?
+      options:
+        - Machines / model loading
+        - Chat (local LM Studio)
+        - Chat (cloud — OpenAI / Anthropic / Google / Qwen)
+        - Personas / Teams
+        - Episodes
+        - Compare mode
+        - Timeline
+        - Scoring / Leaderboard
+        - Voice (STT / TTS)
+        - Settings / Onboarding
+        - Data import / export
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: Settings → About → Version (e.g. 1.0.0)
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device & OS
+      description: Model and iOS / iPadOS version.
+      placeholder: "iPhone 17 Pro, iOS 26.1"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots or logs
+      description: Drag and drop images here. Redact API keys and any personal info.
