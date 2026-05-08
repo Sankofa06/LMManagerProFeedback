@@ -3,10 +3,14 @@
 
   const GH_OWNER = "sankofa06";
   const GH_REPO = "LMManagerProFeedback";
+  // Fine-grained PAT with Issues: Read+Write on this repo only.
+  // WARNING: this token is visible in page source — use a repo-scoped token.
+  const GH_API_TOKEN = "YOUR_GITHUB_PAT_HERE";
   const NEW_ISSUE_URL = `https://github.com/${GH_OWNER}/${GH_REPO}/issues/new/choose`;
   const REPO_URL = `https://github.com/${GH_OWNER}/${GH_REPO}`;
   const CACHE_KEY = `lmmp-feedback-cache-v1`;
   const CACHE_TTL_MS = 5 * 60 * 1000;
+  const UPVOTES_KEY = `lmmp-upvoted-v1`;
 
   const REACTION_EMOJI = {
     "+1": "👍",
@@ -28,12 +32,45 @@
     search: document.getElementById("search-input"),
     submit: document.getElementById("submit-btn"),
     repoLink: document.getElementById("repo-link"),
+    modal: document.getElementById("submit-modal"),
+    form: document.getElementById("submit-form"),
+    issueType: document.getElementById("issue-type"),
+    issueTitle: document.getElementById("issue-title"),
+    issueBody: document.getElementById("issue-body"),
+    modalCancel: document.getElementById("modal-cancel"),
+    modalSubmitBtn: document.getElementById("modal-submit"),
+    modalError: document.getElementById("modal-error"),
   };
 
   let allIssues = [];
 
-  els.submit.href = NEW_ISSUE_URL;
+  function ghHeaders() {
+    const h = { Accept: "application/vnd.github+json" };
+    if (GH_API_TOKEN && GH_API_TOKEN !== "YOUR_GITHUB_PAT_HERE") {
+      h["Authorization"] = `Bearer ${GH_API_TOKEN}`;
+    }
+    return h;
+  }
+
+  function readUpvoted() {
+    try {
+      const raw = localStorage.getItem(UPVOTES_KEY);
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch { return new Set(); }
+  }
+
+  function saveUpvoted(set) {
+    try {
+      localStorage.setItem(UPVOTES_KEY, JSON.stringify([...set]));
+    } catch { /* quota */ }
+  }
+
   if (els.repoLink) els.repoLink.href = REPO_URL;
+
+  els.submit.addEventListener("click", openSubmitModal);
+  els.modalCancel.addEventListener("click", closeModal);
+  els.modal.addEventListener("click", (e) => { if (e.target === els.modal) closeModal(); });
+  els.form.addEventListener("submit", handleSubmit);
 
   loadIssues();
   ["sort", "label", "state", "search"].forEach((k) => {
@@ -47,33 +84,28 @@
       allIssues = cached;
       populateLabelOptions();
       render();
-      setBanner(`Showing cached results. Refreshing…`);
+      setBanner("Showing cached results. Refreshing…");
     } else {
-      setBanner("Loading feedback from GitHub…");
+      setBanner("Loading feedback…");
     }
 
     try {
       const res = await fetch(
         `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/issues?state=all&per_page=100`,
-        { headers: { Accept: "application/vnd.github+json" } }
+        { headers: ghHeaders() }
       );
 
       if (res.status === 403) {
         if (cached) {
-          setBanner(
-            `GitHub rate limit reached. Showing cached results from a few minutes ago.`,
-            true
-          );
+          setBanner("Rate limit reached. Showing cached results.", true);
           return;
         }
-        throw new Error("GitHub API rate limit reached. Please try again in a few minutes.");
+        throw new Error("API rate limit reached. Please try again in a few minutes.");
       }
       if (res.status === 404) {
-        throw new Error(
-          `Repository ${GH_OWNER}/${GH_REPO} not found. It may not exist yet or be private.`
-        );
+        throw new Error(`Repository ${GH_OWNER}/${GH_REPO} not found or private.`);
       }
-      if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
 
       const data = await res.json();
       allIssues = data.filter((i) => !i.pull_request);
@@ -85,10 +117,7 @@
       if (allIssues.length === 0) {
         setBanner(err.message || "Failed to load issues.", true);
       } else {
-        setBanner(
-          `Couldn't refresh: ${err.message}. Showing previously loaded results.`,
-          true
-        );
+        setBanner(`Couldn't refresh: ${err.message}. Showing previously loaded results.`, true);
       }
     }
   }
@@ -97,7 +126,8 @@
     const labels = new Set();
     allIssues.forEach((i) => i.labels.forEach((l) => labels.add(l.name)));
     const current = els.label.value;
-    els.label.innerHTML = `<option value="">All labels</option>` +
+    els.label.innerHTML =
+      `<option value="">All labels</option>` +
       [...labels].sort().map((l) => `<option value="${escapeAttr(l)}">${escapeHTML(l)}</option>`).join("");
     if ([...labels].includes(current)) els.label.value = current;
   }
@@ -141,7 +171,7 @@
         `<li class="empty-state" style="grid-column: 1 / -1;">
           <h2>No feedback yet</h2>
           <p>Be the first to suggest a feature or report a bug.</p>
-          <p><a class="btn primary" href="${NEW_ISSUE_URL}" target="_blank" rel="noopener">Submit Feedback on GitHub</a></p>
+          <p><button class="btn primary" onclick="document.getElementById('submit-btn').click()">Submit Feedback</button></p>
         </li>`
       );
       return;
@@ -151,17 +181,17 @@
   }
 
   function renderCard(issue) {
+    const upvoted = readUpvoted();
+    const hasVoted = upvoted.has(issue.number);
     const upvotes = (issue.reactions && issue.reactions["+1"]) || 0;
+
     const labelChips = issue.labels
       .map((l) => `<span class="label-chip">${escapeHTML(l.name)}</span>`)
       .join("");
 
     const reactionStrip = Object.entries(REACTION_EMOJI)
-      .filter(([k]) => issue.reactions && issue.reactions[k] > 0)
-      .map(([k, emoji]) => {
-        const cls = k === "+1" ? "reaction upvote" : "reaction";
-        return `<span class="${cls}" title="${k}">${emoji} ${issue.reactions[k]}</span>`;
-      })
+      .filter(([k]) => k !== "+1" && issue.reactions && issue.reactions[k] > 0)
+      .map(([k, emoji]) => `<span class="reaction" title="${k}">${emoji} ${issue.reactions[k]}</span>`)
       .join("");
 
     const excerpt = (issue.body || "")
@@ -188,11 +218,104 @@
           <span>by ${escapeHTML(issue.user.login)}</span>
           <span>opened ${relativeTime(issue.created_at)}</span>
           <span>💬 ${issue.comments}</span>
-          ${upvotes > 0 ? `<span title="👍 upvotes">👍 ${upvotes}</span>` : ""}
         </div>
         ${excerpt ? `<p class="issue-body">${escapeHTML(excerpt)}…</p>` : ""}
-        ${reactionStrip ? `<div class="reaction-row">${reactionStrip}</div>` : ""}
+        <div class="reaction-row">
+          <button
+            class="upvote-btn${hasVoted ? " voted" : ""}"
+            onclick="window.__lmmpUpvote(${issue.number})"
+            title="${hasVoted ? "You upvoted this" : "Upvote"}"
+            ${hasVoted ? 'aria-pressed="true"' : 'aria-pressed="false"'}
+          >👍 ${upvotes}</button>
+          ${reactionStrip}
+        </div>
       </li>`;
+  }
+
+  window.__lmmpUpvote = async function (issueNumber) {
+    const upvoted = readUpvoted();
+    if (upvoted.has(issueNumber)) return;
+
+    const btn = els.list.querySelector(`button[onclick="window.__lmmpUpvote(${issueNumber})"]`);
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/issues/${issueNumber}/reactions`,
+        {
+          method: "POST",
+          headers: { ...ghHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ content: "+1" }),
+        }
+      );
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+      upvoted.add(issueNumber);
+      saveUpvoted(upvoted);
+
+      const issue = allIssues.find((i) => i.number === issueNumber);
+      if (issue) {
+        issue.reactions = issue.reactions || {};
+        issue.reactions["+1"] = (issue.reactions["+1"] || 0) + 1;
+        writeCache(allIssues);
+      }
+      render();
+    } catch (err) {
+      if (btn) btn.disabled = false;
+      setBanner(`Couldn't upvote: ${err.message}`, true);
+      setTimeout(clearBanner, 4000);
+    }
+  };
+
+  function openSubmitModal() {
+    els.form.reset();
+    els.modalError.hidden = true;
+    els.modalSubmitBtn.disabled = false;
+    els.modal.showModal();
+    els.issueTitle.focus();
+  }
+
+  function closeModal() {
+    els.modal.close();
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const title = els.issueTitle.value.trim();
+    const body = els.issueBody.value.trim();
+    const labelName = els.issueType.value;
+
+    if (!title) return;
+
+    els.modalSubmitBtn.disabled = true;
+    els.modalSubmitBtn.textContent = "Submitting…";
+    els.modalError.hidden = true;
+
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/issues`,
+        {
+          method: "POST",
+          headers: { ...ghHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ title, body: body || undefined, labels: [labelName] }),
+        }
+      );
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || `API error: ${res.status}`);
+      }
+
+      closeModal();
+      sessionStorage.removeItem(CACHE_KEY);
+      setBanner("Feedback submitted! Refreshing list…");
+      await loadIssues();
+    } catch (err) {
+      els.modalError.textContent = `Failed to submit: ${err.message}`;
+      els.modalError.hidden = false;
+      els.modalSubmitBtn.disabled = false;
+      els.modalSubmitBtn.textContent = "Submit";
+    }
   }
 
   /* ---------- helpers ---------- */
@@ -218,7 +341,7 @@
   function writeCache(data) {
     try {
       sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-    } catch { /* quota exceeded — ignore */ }
+    } catch { /* quota exceeded */ }
   }
   function escapeHTML(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({
