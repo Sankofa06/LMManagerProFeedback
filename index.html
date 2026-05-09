@@ -27,7 +27,6 @@
     <h1>Feedback</h1>
     <p class="tagline">
       Browse open requests, upvote what matters to you, and submit new ideas.
-      Powered by GitHub Issues.
     </p>
 
     <div class="toolbar" role="region" aria-label="Filter and sort">
@@ -60,19 +59,38 @@
         </select>
       </label>
       <span class="spacer"></span>
-      <a id="submit-btn" class="btn primary" href="#" target="_blank" rel="noopener">
-        + Submit Feedback
-      </a>
+      <button id="submit-btn" class="btn primary">+ Submit Feedback</button>
     </div>
 
     <div id="status-banner" role="status" hidden></div>
 
     <ul id="issue-list" aria-live="polite"></ul>
 
-    <p style="margin-top:24px; color: var(--text-muted); font-size: 0.88rem;">
-      To upvote with 👍 or leave a comment, open an issue on GitHub and react there.
-      A free GitHub account is required.
-    </p>
+    <dialog id="submit-modal" aria-labelledby="modal-title">
+      <form id="submit-form">
+        <h2 id="modal-title">Submit Feedback</h2>
+        <label>
+          Type
+          <select id="issue-type">
+            <option value="feature request">Feature Request</option>
+            <option value="bug">Bug Report</option>
+          </select>
+        </label>
+        <label>
+          Title <span class="required" aria-hidden="true">*</span>
+          <input type="text" id="issue-title" required maxlength="200" placeholder="Brief description…" />
+        </label>
+        <label>
+          Details <span class="optional">(optional)</span>
+          <textarea id="issue-body" rows="5" placeholder="Steps to reproduce, expected behaviour, etc."></textarea>
+        </label>
+        <p id="modal-error" class="modal-error" hidden></p>
+        <div class="modal-actions">
+          <button type="button" id="modal-cancel" class="btn">Cancel</button>
+          <button type="submit" id="modal-submit" class="btn primary">Submit</button>
+        </div>
+      </form>
+    </dialog>
   </main>
 
   <footer class="site-footer">
