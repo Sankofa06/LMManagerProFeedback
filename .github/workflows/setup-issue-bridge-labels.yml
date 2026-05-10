@@ -1,0 +1,75 @@
+name: Setup issue bridge labels
+
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  setup-labels:
+    name: Create bridge labels in both repos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ISSUE_MIRROR_TOKEN }}
+          script: |
+            const labels = [
+              {
+                owner: "Sankofa06",
+                repo: "LMManagerPro",
+                name: "public-feedback",
+                color: "0f766e",
+                description: "Mirror this issue into the public feedback repository.",
+              },
+              {
+                owner: "Sankofa06",
+                repo: "LMManagerPro",
+                name: "from-public-feedback",
+                color: "7c3aed",
+                description: "Created from public feedback.",
+              },
+              {
+                owner: "Sankofa06",
+                repo: "LMManagerProFeedback",
+                name: "triage-private",
+                color: "0f766e",
+                description: "Copy this public issue into the private LM Manager Pro tracker.",
+              },
+              {
+                owner: "Sankofa06",
+                repo: "LMManagerProFeedback",
+                name: "internal-tracked",
+                color: "2563eb",
+                description: "Copied into the private LM Manager Pro tracker.",
+              },
+              {
+                owner: "Sankofa06",
+                repo: "LMManagerProFeedback",
+                name: "synced",
+                color: "0f766e",
+                description: "Synchronized with another tracker.",
+              },
+              {
+                owner: "Sankofa06",
+                repo: "LMManagerProFeedback",
+                name: "from-internal",
+                color: "7c3aed",
+                description: "Mirrored from the private LM Manager Pro tracker.",
+              },
+            ];
+
+            for (const label of labels) {
+              const { owner, repo, name, color, description } = label;
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+                core.info(`Exists: ${owner}/${repo} ${name}`);
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                await github.rest.issues.createLabel({ owner, repo, name, color, description });
+                core.info(`Created: ${owner}/${repo} ${name}`);
+              }
+            }

@@ -92,6 +92,24 @@ repo) and fill in:
   tab. Reactions and comments happen on GitHub with the user's own
   account — the static site never touches authentication or write APIs.
 
+## Issue bridge
+
+This public repo can copy feedback into the private
+`Sankofa06/LMManagerPro` tracker through
+`.github/workflows/public-to-private-issue-sync.yml`.
+
+- Add the `triage-private` label to a public issue to create a private
+  issue titled `[Public feedback #N] ...`.
+- The public issue is then labeled `internal-tracked` and `synced`, and
+  gets a neutral confirmation comment.
+- The workflow needs an `ISSUE_MIRROR_TOKEN` repository secret with Issues
+  read/write access to both `Sankofa06/LMManagerProFeedback` and
+  `Sankofa06/LMManagerPro`.
+- After adding the secret, run the manual `Setup issue bridge labels`
+  workflow once to create the bridge labels in both repos.
+- The workflow does not publish private repo URLs or private issue numbers
+  back to the public issue.
+
 ## Local preview
 
 Open `index.html`, `feedback.html`, or `privacy.html` directly in a browser

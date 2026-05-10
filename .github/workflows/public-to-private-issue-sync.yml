@@ -1,0 +1,142 @@
+name: Public feedback to private tracker
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Public feedback issue number to copy inward
+        required: true
+        type: number
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: public-to-private-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: false
+
+jobs:
+  copy-to-private:
+    name: Copy labeled public feedback into LMManagerPro
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.label.name == 'triage-private' && github.event.issue.pull_request == null)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Copy issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ISSUE_MIRROR_TOKEN }}
+          script: |
+            const PUBLIC_OWNER = "Sankofa06";
+            const PUBLIC_REPO = "LMManagerProFeedback";
+            const PRIVATE_OWNER = "Sankofa06";
+            const PRIVATE_REPO = "LMManagerPro";
+            const TRIAGE_LABEL = "triage-private";
+            const PUBLIC_SYNC_LABELS = ["internal-tracked", "synced"];
+            const PRIVATE_SOURCE_LABEL = "from-public-feedback";
+            const MARKER_PREFIX = "<!-- lmmp-private-copy:";
+            const MARKER_SUFFIX = " -->";
+
+            async function ensureLabel(owner, repo, name, color, description) {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                await github.rest.issues.createLabel({ owner, repo, name, color, description });
+              }
+            }
+
+            async function getPublicIssue() {
+              if (context.eventName === "workflow_dispatch") {
+                const issue_number = Number(core.getInput("issue_number"));
+                const { data } = await github.rest.issues.get({
+                  owner: PUBLIC_OWNER,
+                  repo: PUBLIC_REPO,
+                  issue_number,
+                });
+                return data;
+              }
+              return context.payload.issue;
+            }
+
+            async function findExistingPrivateCopy(publicIssueNumber) {
+              const marker = `${MARKER_PREFIX}${PUBLIC_OWNER}/${PUBLIC_REPO}#${publicIssueNumber}${MARKER_SUFFIX}`;
+              const query = `repo:${PRIVATE_OWNER}/${PRIVATE_REPO} is:issue in:body "${marker}"`;
+              const { data } = await github.rest.search.issuesAndPullRequests({ q: query, per_page: 1 });
+              return data.items[0] || null;
+            }
+
+            const issue = await getPublicIssue();
+            if (issue.pull_request) {
+              core.info("Skipping pull request.");
+              return;
+            }
+
+            const hasTriageLabel = issue.labels.some((label) => label.name === TRIAGE_LABEL);
+            if (!hasTriageLabel && context.eventName !== "workflow_dispatch") {
+              core.info(`Skipping issue #${issue.number}; missing ${TRIAGE_LABEL}.`);
+              return;
+            }
+
+            await ensureLabel(PUBLIC_OWNER, PUBLIC_REPO, TRIAGE_LABEL, "0f766e", "Copy this public issue into the private LM Manager Pro tracker.");
+            await ensureLabel(PUBLIC_OWNER, PUBLIC_REPO, "internal-tracked", "2563eb", "Copied into the private LM Manager Pro tracker.");
+            await ensureLabel(PUBLIC_OWNER, PUBLIC_REPO, "synced", "0f766e", "Synchronized with another tracker.");
+            await ensureLabel(PRIVATE_OWNER, PRIVATE_REPO, PRIVATE_SOURCE_LABEL, "7c3aed", "Created from public feedback.");
+
+            const existing = await findExistingPrivateCopy(issue.number);
+            if (existing) {
+              core.info(`Private copy already exists: #${existing.number}`);
+            } else {
+              const marker = `${MARKER_PREFIX}${PUBLIC_OWNER}/${PUBLIC_REPO}#${issue.number}${MARKER_SUFFIX}`;
+              const author = issue.user && issue.user.html_url ? `@${issue.user.login} (${issue.user.html_url})` : "unknown";
+              const body = [
+                marker,
+                `Copied from public feedback issue ${issue.html_url}`,
+                "",
+                `Public author: ${author}`,
+                `Public state at copy time: ${issue.state}`,
+                "",
+                "## Public feedback body",
+                issue.body && issue.body.trim() ? issue.body.trim() : "_No body provided._",
+              ].join("\n");
+
+              const { data: created } = await github.rest.issues.create({
+                owner: PRIVATE_OWNER,
+                repo: PRIVATE_REPO,
+                title: `[Public feedback #${issue.number}] ${issue.title}`,
+                body,
+                labels: [PRIVATE_SOURCE_LABEL],
+              });
+              core.info(`Created private issue #${created.number}`);
+            }
+
+            for (const label of PUBLIC_SYNC_LABELS) {
+              await github.rest.issues.addLabels({
+                owner: PUBLIC_OWNER,
+                repo: PUBLIC_REPO,
+                issue_number: issue.number,
+                labels: [label],
+              });
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: PUBLIC_OWNER,
+              repo: PUBLIC_REPO,
+              issue_number: issue.number,
+              per_page: 100,
+            });
+            const alreadyCommented = comments.some((comment) =>
+              comment.body && comment.body.includes("Copied to the internal LM Manager Pro tracker for triage.")
+            );
+            if (!alreadyCommented) {
+              await github.rest.issues.createComment({
+                owner: PUBLIC_OWNER,
+                repo: PUBLIC_REPO,
+                issue_number: issue.number,
+                body: "Copied to the internal LM Manager Pro tracker for triage.",
+              });
+            }
