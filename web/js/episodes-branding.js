@@ -5,11 +5,15 @@ function saveBrandName(val){
   APP.brandName=name; saveApp();
   localStorage.setItem('lmmp_v7_brand',name);
   document.title=name+' AI Manager';
+  const el=document.getElementById('topbar-brand-name');
+  if(el)el.textContent=name;
 }
 function loadBrandName(){
   const saved=APP.brandName||localStorage.getItem('lmmp_v7_brand')||'LM Manager Pro Web';
   APP.brandName=saved;
   document.title=saved+' AI Manager';
+  const el=document.getElementById('topbar-brand-name');
+  if(el)el.textContent=saved;
 }
 
 /* ── V7: ROSTER LIST FILTER (Engineers panel) ── */
