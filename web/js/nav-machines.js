@@ -113,6 +113,14 @@ function hfUrl(modelId, meta){
 
 function renderRosterTable(){
   const el=document.getElementById('roster-table');if(!el)return;el.innerHTML='';
+  if(!MACHINES.length){
+    el.innerHTML=`<div style="padding:28px 18px;text-align:center;color:var(--tx3);font-size:12px;font-family:var(--mono)">
+      <div style="font-size:15px;color:var(--tx1);margin-bottom:8px">No machines configured</div>
+      <div style="max-width:420px;margin:0 auto 12px;line-height:1.6">Use <strong>Machines</strong> to add your first LM Studio endpoint, then run <strong>Check all</strong> to discover live models.</div>
+      <button class="btn btn-sm btn-primary" onclick="openMachineModal()">+ Add Machine</button>
+    </div>`;
+    return;
+  }
   const af=state.archetypeFilter;
   let visibleTotal=0;
   MACHINES.forEach(mc=>{
@@ -202,6 +210,11 @@ function renderRosterTable(){
     const empty=document.createElement('div');
     empty.style.cssText='padding:24px;text-align:center;color:var(--tx4);font-size:12px;font-family:var(--mono)';
     empty.textContent=`No ${ARCHETYPES[af]?.label||af} models on any machine`;
+    el.appendChild(empty);
+  } else if(visibleTotal===0){
+    const empty=document.createElement('div');
+    empty.style.cssText='padding:24px;text-align:center;color:var(--tx4);font-size:12px;font-family:var(--mono);line-height:1.6';
+    empty.innerHTML='No models in the roster yet.<br><span style="font-size:11px;color:var(--tx3)">Bring a machine online, update the device map if prompted, then scan the roster.</span>';
     el.appendChild(empty);
   }
 }
@@ -412,7 +425,14 @@ async function checkAllMachines(){
   postCheckPrompt();
 }
 
+function dismissSetupBanner(){
+  state.setupBannerDismissed=true;
+  const banner=document.getElementById('setup-banner');
+  if(banner)banner.style.display='none';
+}
+
 function showBanner(icon, color, headline, sub, btnLabel, action, autoScan=false){
+  if(state.setupBannerDismissed)return;
   const banner=document.getElementById('setup-banner');
   const msg=document.getElementById('setup-banner-msg');
   const subEl=document.getElementById('setup-banner-sub');
@@ -437,8 +457,22 @@ function showBanner(icon, color, headline, sub, btnLabel, action, autoScan=false
 }
 
 function postCheckPrompt(){
+  if(!MACHINES.length){
+    showBanner('🖥️','blue',
+      'Add your first machine to get started',
+      'Open Machines and enter the LM Studio URL, VRAM, and an optional note for the box you want to query.',
+      '⚙ Add Machine','machines');
+    return;
+  }
+
   const online=MACHINES.filter(m=>m.status==='online'&&m.availableModels?.length);
-  if(!online.length)return;
+  if(!online.length){
+    showBanner('↺','blue',
+      'Check your machines to verify connectivity',
+      'Once at least one machine is online, the app can discover live models and guide the next setup step.',
+      '↺ Check Machines','check');
+    return;
+  }
 
   const hasKeyMap=APP.lmLinkKeyMap&&Object.keys(APP.lmLinkKeyMap).length>0;
   const rosterPairs=new Set(ROSTER.map(r=>r.model+'__'+r.machine));
@@ -529,6 +563,10 @@ function setupBannerAction(){
     },150);
   } else if(btn.dataset.action==='scan'){
     scanForNewModels();
+  } else if(btn.dataset.action==='machines'){
+    setNav('machines');
+    openMachineModal();
+  } else if(btn.dataset.action==='check'){
+    checkAllMachines();
   }
 }
-

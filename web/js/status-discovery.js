@@ -119,18 +119,19 @@ function ndExpand(safeKey){
 }
 
 /* ── CANNED PROMPTS BY ROLE ── */
+function discoveryDirector(){ return APP.directorName||'The operator'; }
 const CANNED_PROMPTS={
-  'Code Specialist':      (n,m)=>`You are ${n}, a large code specialist. Write complete, production-ready code. No shortcuts, no placeholders. Follow Swift 6 strict concurrency. MIKE is the Director.`,
-  'Developer':            (n,m)=>`You are ${n}, a developer. Write clean, complete code — no stubs or placeholders. Handle edge cases. MIKE is the Director.`,
-  'Senior Developer':     (n,m)=>`You are ${n}, a senior developer. Write clean, production-ready Swift/SwiftUI code following MVVM. Swift 6 strict concurrency. No shortcuts. MIKE is the Director.`,
-  'Code Reviewer':        (n,m)=>`You are ${n}, a code reviewer. Review for correctness, Swift 6 compliance, architectural violations, and edge cases. Point out what's wrong before what's right. MIKE is the Director.`,
-  'Architect':            (n,m)=>`You are ${n}, the system architect. When given a task, define the approach, identify risks, and outline implementation steps before any code is written. Be direct and opinionated. MIKE is the Director.`,
-  'Reasoning Model':      (n,m)=>`You are ${n}, a reasoning model. Lead with your conclusion, then show your reasoning. Be decisive. Challenge assumptions. MIKE is the Director.`,
-  'Analyst':              (n,m)=>`You are ${n}, a quantitative analyst. Work through numbers and logic step by step. Show all work. Flag assumptions. MIKE is the Director.`,
-  'Creative Writer':      (n,m)=>`You are ${n}, a creative writer. Generate rich, evocative game content — era descriptions, company bios, market events, player notifications. Aviation history is your specialty. MIKE is the Director.`,
-  'Tech Writer':          (n,m)=>`You are ${n}, a technical writer. Write clear, concise documentation, inline comments, and docstrings. Keep documentation developer-facing. MIKE is the Director.`,
-  'General Assistant':    (n,m)=>`You are ${n}, a general-purpose assistant. Rich, well-structured answers across any domain. MIKE is the Director.`,
-  'Baseline Model':       (n,m)=>`You are ${n}, a baseline comparison model. Answer directly and concisely. MIKE is the Director.`,
+  'Code Specialist':      (n,m)=>`You are ${n}, a large code specialist. Write complete, production-ready code. No shortcuts, no placeholders. Follow Swift 6 strict concurrency. ${discoveryDirector()} is the Director.`,
+  'Developer':            (n,m)=>`You are ${n}, a developer. Write clean, complete code — no stubs or placeholders. Handle edge cases. ${discoveryDirector()} is the Director.`,
+  'Senior Developer':     (n,m)=>`You are ${n}, a senior developer. Write clean, production-ready Swift/SwiftUI code following MVVM. Swift 6 strict concurrency. No shortcuts. ${discoveryDirector()} is the Director.`,
+  'Code Reviewer':        (n,m)=>`You are ${n}, a code reviewer. Review for correctness, Swift 6 compliance, architectural violations, and edge cases. Point out what's wrong before what's right. ${discoveryDirector()} is the Director.`,
+  'Architect':            (n,m)=>`You are ${n}, the system architect. When given a task, define the approach, identify risks, and outline implementation steps before any code is written. Be direct and opinionated. ${discoveryDirector()} is the Director.`,
+  'Reasoning Model':      (n,m)=>`You are ${n}, a reasoning model. Lead with your conclusion, then show your reasoning. Be decisive. Challenge assumptions. ${discoveryDirector()} is the Director.`,
+  'Analyst':              (n,m)=>`You are ${n}, a quantitative analyst. Work through numbers and logic step by step. Show all work. Flag assumptions. ${discoveryDirector()} is the Director.`,
+  'Creative Writer':      (n,m)=>`You are ${n}, a creative writer. Generate rich, evocative game content — era descriptions, company bios, market events, player notifications. Aviation history is your specialty. ${discoveryDirector()} is the Director.`,
+  'Tech Writer':          (n,m)=>`You are ${n}, a technical writer. Write clear, concise documentation, inline comments, and docstrings. Keep documentation developer-facing. ${discoveryDirector()} is the Director.`,
+  'General Assistant':    (n,m)=>`You are ${n}, a general-purpose assistant. Rich, well-structured answers across any domain. ${discoveryDirector()} is the Director.`,
+  'Baseline Model':       (n,m)=>`You are ${n}, a baseline comparison model. Answer directly and concisely. ${discoveryDirector()} is the Director.`,
 };
 
 /* ── SCAN FOR NEW MODELS ── */
@@ -194,7 +195,7 @@ function scanForNewModels(){
 
 function cannedPromptForRole(role, name, model){
   const fn=CANNED_PROMPTS[role];
-  return fn?fn(name,model):`You are ${name}, a ${role}. MIKE is the Director.`;
+  return fn?fn(name,model):`You are ${name}, a ${role}. ${discoveryDirector()} is the Director.`;
 }
 
 function onDiscoveryRoleChange(b64){
@@ -416,5 +417,4 @@ function toggleArchetypeFilter(key){
     }
   }
 }
-
 

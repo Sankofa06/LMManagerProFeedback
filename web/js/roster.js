@@ -23,6 +23,7 @@ function sortRosterGroup(group){
 
 function renderRoster(){
   const scroll=document.getElementById('roster-scroll');scroll.innerHTML='';
+  const detail=document.getElementById('roster-detail');
   const af=state.archetypeFilter;
   const knownMachineIds=new Set(MACHINES.map(m=>m.id));
   const byMachine={};MACHINES.forEach(m=>byMachine[m.id]=[]);
@@ -56,8 +57,17 @@ function renderRoster(){
   };
   MACHINES.forEach(mc=>renderGroup(byMachine[mc.id]||[],`<div style="width:7px;height:7px;border-radius:50%;background:${mc.color};flex-shrink:0"></div><span style="color:${mc.color}">${mc.icon} ${mc.name}</span>`));
   if(orphans.length)renderGroup(orphans,`<div style="width:7px;height:7px;border-radius:50%;background:var(--tx3);flex-shrink:0"></div><span style="color:var(--tx3)">⚠ Unassigned</span>`);
+  if(!ROSTER.length){
+    scroll.innerHTML='<div style="padding:24px 18px;text-align:center;color:var(--tx3);font-size:12px;font-family:var(--mono);line-height:1.6">No models in the roster yet.<br><span style="font-size:11px;color:var(--tx4)">Check your machines, then scan or add models to start building teams.</span></div>';
+    if(detail)detail.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:24px;color:var(--tx3);font-size:12px;font-family:var(--mono);text-align:center;line-height:1.6">Select a model after you add one to the roster.</div>';
+    renderArchetypeLegend();
+    return;
+  }
   renderArchetypeLegend();
   if(state.selRoster){const r=ROSTER.find(x=>x.id===state.selRoster);if(r)renderRosterDetail(r);}
+  else if(detail){
+    detail.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:24px;color:var(--tx3);font-size:12px;font-family:var(--mono);text-align:center;line-height:1.6">Pick a model from the roster to inspect, edit, or interview it.</div>';
+  }
 }
 
 // v8.3: master/detail focus state on mobile.
@@ -343,4 +353,3 @@ function reviveAll(){
   save();renderRoster();renderSurvivorIf();toast('All engineers revived · set to Unhired');
 }
 function clearImmunity(){ROSTER.forEach(r=>r.immunity=false);save();renderRoster();renderSurvivorIf();}
-

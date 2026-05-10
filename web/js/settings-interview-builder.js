@@ -26,7 +26,7 @@ function updateSettingsPanel(){
   setSpChecked('sp-thinking', APP.thinkingEnabled??false);
 
   // Director
-  setSpVal('sp-director-name', APP.directorName||'MIKE');
+  setSpVal('sp-director-name', APP.directorName||'The operator');
   setSpVal('sp-global-suffix', APP.globalSuffix||'');
   setSpVal('sp-brand-name',    APP.brandName||'LM Manager Pro Web');
 
@@ -92,7 +92,7 @@ function applyBrandName(name){
 }
 
 function applyDirectorName(name){
-  APP.directorName=name.trim()||'MIKE';
+  APP.directorName=name.trim()||'The operator';
   saveApp();
   updateIvBuilderPanel();
   const affected=ROSTER.filter(r=>!r.promptOverridden).length;
@@ -165,7 +165,7 @@ function rebuildAndSaveInterviewPrompt(){
 
 function updateIvBuilderPanel(){
   // §1 Opening
-  const dir=APP.directorName||'MIKE';
+  const dir=APP.directorName||'The operator';
   const appName=APP.brandName||'LM Manager Pro Web';
   const opening=document.getElementById('sp-iv-opening');
   if(opening)opening.textContent=`Hello, I'm ${dir}, Director of ${appName}.`;
@@ -232,7 +232,6 @@ function resetInterviewPromptToDefault(){
 // Legacy stub — old single-textarea prompt editor
 function setIvPreset(p){ setIvProductPreset(p); }
 function onIvBodyChange(v){ onIvProductChange(v); }
-
 
 
 

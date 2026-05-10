@@ -288,10 +288,11 @@ function amAutoPrompt(force=false){
   const persona=(document.getElementById('am-persona')?.value||'').trim();
   const role=(document.getElementById('am-role')?.value||'').trim();
   const name=nick||persona||(first&&last?`${first} ${last}`:'');
+  const director=APP.directorName||'The operator';
   if(!name&&!role)return;
-  const generated=name&&role?`You are ${name}, a ${role}. MIKE is the Director.`
-    :name?`You are ${name}. MIKE is the Director.`
-    :`You are a ${role}. MIKE is the Director.`;
+  const generated=name&&role?`You are ${name}, a ${role}. ${director} is the Director.`
+    :name?`You are ${name}. ${director} is the Director.`
+    :`You are a ${role}. ${director} is the Director.`;
   if(force||!(ta.value||'').trim())ta.value=generated;
 }
 function openAddModelModal(){
@@ -419,4 +420,3 @@ function addModelFromModal(){
   ['am-prof','am-spec'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
   const preview=document.getElementById('am-role-preview');if(preview)preview.textContent='';
 }
-

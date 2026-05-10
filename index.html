@@ -14,7 +14,7 @@
     <div class="header-inner">
       <a class="brand" href="./">
         <img src="assets/icon.svg" alt="" />
-        LM Manager Pro
+        <span class="brand-mark">LM Manager Pro</span>
       </a>
       <nav class="site-nav">
         <a href="./" class="active">Feedback</a>
@@ -24,47 +24,95 @@
   </header>
 
   <main class="container">
-    <h1>Feedback</h1>
-    <p class="tagline">
-      Browse open requests, upvote what matters to you, and submit new ideas.
-    </p>
+    <section class="hero hero-feedback">
+      <div class="hero-copy">
+        <span class="eyebrow">Community Queue</span>
+        <h1>Ship the right fixes first.</h1>
+        <p class="tagline">
+          Browse active requests, upvote what matters, and submit the missing bug
+          report or feature idea.
+        </p>
+        <div class="hero-actions">
+          <button id="submit-btn" class="btn primary">+ Submit Feedback</button>
+          <a class="btn ghost" href="privacy.html">View Privacy Policy</a>
+        </div>
+      </div>
+      <div class="hero-panel">
+        <div class="hero-panel-head">
+          <span class="hero-panel-kicker">Live Snapshot</span>
+          <span id="summary-state" class="hero-panel-note">Waiting for issues…</span>
+        </div>
+        <div class="summary-grid" aria-label="Feedback summary">
+          <article class="summary-card">
+            <span class="summary-label">Visible</span>
+            <strong id="summary-visible">0</strong>
+          </article>
+          <article class="summary-card">
+            <span class="summary-label">Open</span>
+            <strong id="summary-open">0</strong>
+          </article>
+          <article class="summary-card">
+            <span class="summary-label">Closed</span>
+            <strong id="summary-closed">0</strong>
+          </article>
+          <article class="summary-card">
+            <span class="summary-label">Labels</span>
+            <strong id="summary-labels">0</strong>
+          </article>
+        </div>
+      </div>
+    </section>
 
-    <div class="toolbar" role="region" aria-label="Filter and sort">
-      <input
-        type="search"
-        id="search-input"
-        placeholder="Search feedback…"
-        aria-label="Search feedback"
-      />
-      <label>
-        Sort
-        <select id="sort-select" aria-label="Sort">
-          <option value="top">Top (👍)</option>
-          <option value="newest">Newest</option>
-          <option value="comments">Most discussed</option>
-        </select>
-      </label>
-      <label>
-        Label
-        <select id="label-select" aria-label="Filter by label">
-          <option value="">All labels</option>
-        </select>
-      </label>
-      <label>
-        State
-        <select id="state-select" aria-label="Filter by state">
-          <option value="open">Open</option>
-          <option value="all">All</option>
-          <option value="closed">Closed</option>
-        </select>
-      </label>
-      <span class="spacer"></span>
-      <button id="submit-btn" class="btn primary">+ Submit Feedback</button>
-    </div>
+    <section class="surface toolbar-surface" aria-label="Filter and sort">
+      <div class="surface-head">
+        <div>
+          <h2>Browse Feedback</h2>
+          <p>Filter the queue by keyword, state, label, or discussion level.</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <input
+          type="search"
+          id="search-input"
+          placeholder="Search feedback, keywords, or issue text…"
+          aria-label="Search feedback"
+        />
+        <label>
+          Sort
+          <select id="sort-select" aria-label="Sort">
+            <option value="top">Top (👍)</option>
+            <option value="newest">Newest</option>
+            <option value="comments">Most discussed</option>
+          </select>
+        </label>
+        <label>
+          Label
+          <select id="label-select" aria-label="Filter by label">
+            <option value="">All labels</option>
+          </select>
+        </label>
+        <label>
+          State
+          <select id="state-select" aria-label="Filter by state">
+            <option value="open">Open</option>
+            <option value="all">All</option>
+            <option value="closed">Closed</option>
+          </select>
+        </label>
+      </div>
+    </section>
 
     <div id="status-banner" role="status" hidden></div>
 
-    <ul id="issue-list" aria-live="polite"></ul>
+    <section class="surface issue-surface">
+      <div class="surface-head">
+        <div>
+          <h2>Issue Board</h2>
+          <p id="results-copy">Loading the latest feedback from GitHub…</p>
+        </div>
+      </div>
+      <ul id="issue-list" aria-live="polite"></ul>
+    </section>
 
     <dialog id="submit-modal" aria-labelledby="modal-title">
       <form id="submit-form">

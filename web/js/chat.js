@@ -220,7 +220,7 @@ function buildIvTeamLine(){
 }
 
 function buildInterviewPrompt(){
-  const dir=APP.directorName||'MIKE';
+  const dir=APP.directorName||'The operator';
   const appName=APP.brandName||'LM Manager Pro Web';
   const parts=[];
   parts.push(`Hello, I'm ${dir}, Director of ${appName}.`);
@@ -261,4 +261,3 @@ function saveCriteria(){localStorage.setItem('lmmp_v5_criteria',JSON.stringify(C
 
 function save(){localStorage.setItem('lmmp_v5_roster',JSON.stringify(ROSTER));localStorage.setItem('lmmp_v5_teams',JSON.stringify(TEAMS));localStorage.setItem('lmmp_v5_ep',String(state.epCount));localStorage.setItem('lmmp_v5_presets',JSON.stringify(PRESETS));localStorage.setItem('lmmp_v5_timeline',JSON.stringify(TIMELINE.slice(-500)));localStorage.setItem('lmmp_v7_archived',JSON.stringify((state.archivedChats||[]).slice(-50)));saveMachines();}
 function saveInterviewPrompt(text){interviewPrompt=text;localStorage.setItem('lmmp_v5_iv_prompt',text);}
-

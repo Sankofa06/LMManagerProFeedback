@@ -107,7 +107,7 @@ async function runCompare(prompt){
   const grid=document.createElement('div');grid.id='compare-grid-'+Date.now();grid.className='';grid.style.cssText='display:grid;gap:12px;padding:12px 16px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))';
   log.appendChild(grid);
   // user bubble first
-  addChatBubble('MIKE','Director','#f59e0b',prompt,true);
+  addChatBubble(APP.directorName||'The operator','Director','#f59e0b',prompt,true);
   // create empty columns up front
   const cols={};
   queue.forEach(r=>{
@@ -338,4 +338,3 @@ function clearTimeline(){
   if(!confirm(`Clear all ${TIMELINE.length} timeline entries? This won't affect model stats.`))return;
   TIMELINE=[];save();renderTimeline();toast('Timeline cleared');
 }
-

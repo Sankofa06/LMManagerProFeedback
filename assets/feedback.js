@@ -40,6 +40,12 @@
     modalCancel: document.getElementById("modal-cancel"),
     modalSubmitBtn: document.getElementById("modal-submit"),
     modalError: document.getElementById("modal-error"),
+    summaryVisible: document.getElementById("summary-visible"),
+    summaryOpen: document.getElementById("summary-open"),
+    summaryClosed: document.getElementById("summary-closed"),
+    summaryLabels: document.getElementById("summary-labels"),
+    summaryState: document.getElementById("summary-state"),
+    resultsCopy: document.getElementById("results-copy"),
   };
 
   let allIssues = [];
@@ -148,6 +154,8 @@
       return true;
     });
 
+    updateSummary(filtered, labelFilter, stateFilter, q);
+
     filtered.sort((a, b) => {
       switch (sort) {
         case "newest":
@@ -169,8 +177,8 @@
       els.list.insertAdjacentHTML(
         "beforeend",
         `<li class="empty-state" style="grid-column: 1 / -1;">
-          <h2>No feedback yet</h2>
-          <p>Be the first to suggest a feature or report a bug.</p>
+          <h2>No matching feedback</h2>
+          <p>Try a different filter, or open a new request if this hasn't been reported yet.</p>
           <p><button class="btn primary" onclick="document.getElementById('submit-btn').click()">Submit Feedback</button></p>
         </li>`
       );
@@ -202,24 +210,32 @@
       .slice(0, 220);
 
     const stateBadge = issue.state === "closed"
-      ? `<span class="label-chip" title="Closed">closed</span>`
-      : "";
+      ? `<span class="issue-state closed" title="Closed">Closed</span>`
+      : `<span class="issue-state" title="Open">Open</span>`;
+
+    const commentsLabel = issue.comments === 1 ? "1 comment" : `${issue.comments} comments`;
+    const excerptSuffix = excerpt.length >= 220 ? "…" : "";
 
     return `
       <li class="issue-card">
-        <div class="label-row">
-          ${labelChips}
+        <div class="issue-topline">
+          <div>
+            <div class="issue-number">Issue #${issue.number}</div>
+            <a class="issue-link" href="${issue.html_url}" target="_blank" rel="noopener">
+              ${escapeHTML(issue.title)}
+            </a>
+          </div>
           ${stateBadge}
         </div>
-        <a class="issue-link" href="${issue.html_url}" target="_blank" rel="noopener">
-          #${issue.number} · ${escapeHTML(issue.title)}
-        </a>
         <div class="issue-meta">
+          <span>Opened ${relativeTime(issue.created_at)}</span>
           <span>by ${escapeHTML(issue.user.login)}</span>
-          <span>opened ${relativeTime(issue.created_at)}</span>
-          <span>💬 ${issue.comments}</span>
+          <span>${commentsLabel}</span>
         </div>
-        ${excerpt ? `<p class="issue-body">${escapeHTML(excerpt)}…</p>` : ""}
+        ${excerpt ? `<p class="issue-body">${escapeHTML(excerpt)}${excerptSuffix}</p>` : ""}
+        <div class="label-row">
+          ${labelChips || `<span class="label-chip">unlabeled</span>`}
+        </div>
         <div class="reaction-row">
           <button
             class="upvote-btn${hasVoted ? " voted" : ""}"
@@ -227,9 +243,37 @@
             title="${hasVoted ? "You upvoted this" : "Upvote"}"
             ${hasVoted ? 'aria-pressed="true"' : 'aria-pressed="false"'}
           >👍 ${upvotes}</button>
-          ${reactionStrip}
+          <div class="reaction-tray">${reactionStrip}</div>
         </div>
       </li>`;
+  }
+
+  function updateSummary(filtered, labelFilter, stateFilter, q) {
+    const openCount = filtered.filter((issue) => issue.state === "open").length;
+    const closedCount = filtered.filter((issue) => issue.state === "closed").length;
+    const visibleLabels = new Set();
+    filtered.forEach((issue) => issue.labels.forEach((label) => visibleLabels.add(label.name)));
+
+    if (els.summaryVisible) els.summaryVisible.textContent = String(filtered.length);
+    if (els.summaryOpen) els.summaryOpen.textContent = String(openCount);
+    if (els.summaryClosed) els.summaryClosed.textContent = String(closedCount);
+    if (els.summaryLabels) els.summaryLabels.textContent = String(visibleLabels.size);
+
+    const scope = [
+      stateFilter === "all" ? "all states" : stateFilter,
+      labelFilter ? `label: ${labelFilter}` : "",
+      q ? `search: “${q}”` : "",
+    ].filter(Boolean).join(" · ");
+
+    if (els.summaryState) {
+      els.summaryState.textContent = scope || "Showing the full feedback queue";
+    }
+
+    if (els.resultsCopy) {
+      els.resultsCopy.textContent = filtered.length
+        ? `${filtered.length} issue${filtered.length === 1 ? "" : "s"} visible${scope ? ` for ${scope}` : ""}.`
+        : `No issues match the current filters${scope ? ` (${scope})` : ""}.`;
+    }
   }
 
   window.__lmmpUpvote = async function (issueNumber) {

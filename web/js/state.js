@@ -1,14 +1,9 @@
 /* ── STATE ── */
 let ROSTER=JSON.parse(localStorage.getItem('lmmp_v5_roster')||'null')||DEFAULT_ROSTER;
 let TEAMS=JSON.parse(localStorage.getItem('lmmp_v5_teams')||'null')||DEFAULT_TEAMS;
-let PRESETS=JSON.parse(localStorage.getItem('lmmp_v5_presets')||'null')||[
-  {id:'p1',name:'Swift 6 actor refactor',text:'Refactor this code to use Swift 6 strict concurrency with actor isolation. Identify any data races first, then propose the fix.'},
-  {id:'p2',name:'Reactions parsing',text:"Write a JS function that fetches GitHub issue reactions and returns counts per emoji. Handle both array and object response formats."},
-  {id:'p3',name:'Aviation history',text:'Describe three pivotal aircraft from the Golden Age of Aviation (1918–1939) and what each contributed to the industry.'},
-  {id:'p4',name:'Quick math',text:"If a player builds 8 aircraft per quarter at $24M unit cost and sells at $32M, what's the annual gross margin?"},
-];
+let PRESETS=JSON.parse(localStorage.getItem('lmmp_v5_presets')||'null')||[];
 let TIMELINE=JSON.parse(localStorage.getItem('lmmp_v5_timeline')||'null')||[];
-let state={nav:'machines',selRoster:null,selTeam:null,runTeam:null,epCount:parseInt(localStorage.getItem('lmmp_v5_ep')||'0'),theme:localStorage.getItem('lmmp_v5_theme')||'dark',compareMode:false,sessionTracker:{runs:0,tokens:0,timeMs:0,peakVram:0},boardSort:'score',archetypeFilter:null,familyFilter:null,selEpisode:null,archivedChats:JSON.parse(localStorage.getItem('lmmp_v7_archived')||'[]'),collapsedMachines:new Set()};
+let state={nav:'machines',selRoster:null,selTeam:null,runTeam:null,epCount:parseInt(localStorage.getItem('lmmp_v5_ep')||'0'),theme:localStorage.getItem('lmmp_v5_theme')||'dark',compareMode:false,sessionTracker:{runs:0,tokens:0,timeMs:0,peakVram:0},boardSort:'score',archetypeFilter:null,familyFilter:null,selEpisode:null,archivedChats:JSON.parse(localStorage.getItem('lmmp_v7_archived')||'[]'),collapsedMachines:new Set(),setupBannerDismissed:false};
 ROSTER.forEach(r=>{
   if(r.totalScore===undefined)r.totalScore=0;
   if(r.episodes===undefined)r.episodes=0;

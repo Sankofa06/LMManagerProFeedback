@@ -36,7 +36,7 @@ function clearRoster(){
 function wipeAllData(){
   if(!confirm('⚠️ WIPE ALL DATA?\n\nThis will permanently delete:\n• Every model on the roster\n• All teams, scores, and session history\n• All episodes and presets\n• All machines\n\nThe app will reload to a completely blank state.\nThis cannot be undone. Continue?'))return;
   if(!confirm('Last chance — are you absolutely sure?\n\nClick OK to wipe everything now.'))return;
-  // Write empty/zero values so defaults don't reload on restart
+  // Write empty/zero values so the app reloads into the same blank state as first launch.
   localStorage.setItem('lmmp_v5_roster',   JSON.stringify([]));
   localStorage.setItem('lmmp_v5_teams',    JSON.stringify([]));
   localStorage.setItem('lmmp_v5_machines', JSON.stringify([]));
@@ -47,6 +47,11 @@ function wipeAllData(){
   localStorage.setItem('lmmp_v7_archived', JSON.stringify([]));
   localStorage.setItem('lmmp_v7_episodes', JSON.stringify([]));
   localStorage.setItem('lmmp_v5_ep',       '0');
+  localStorage.removeItem('lmmp_app_settings');
+  localStorage.removeItem('lmmp_custom_roles');
+  localStorage.removeItem('lmmp_v5_theme');
+  localStorage.removeItem('lmmp_v5_iv_prompt');
+  localStorage.removeItem('lmmp_v82_oneonone');
   localStorage.removeItem('lmmp_v7_brand');
   location.reload();
 }
@@ -180,4 +185,3 @@ function setBoardSort(key){
   });
   renderSurvivor();
 }
-

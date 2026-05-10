@@ -140,7 +140,7 @@ function getSpWeight(id, appKey){
 
 function renderRunPanel(){
   const sel=document.getElementById('run-team-select');if(!sel)return;
-  sel.innerHTML='<option value="">Select team…</option>';
+  sel.innerHTML=`<option value="">${TEAMS.length?'Select team…':'No teams yet — build roster first'}</option>`;
   TEAMS.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=`${t.icon} ${t.name}`;if(state.runTeam?.id===t.id)o.selected=true;sel.appendChild(o);});
   if(state.runTeam)buildTurnQueue(state.runTeam);
   setChatMode(chat.mode);
@@ -260,9 +260,10 @@ async function sendChatMessage(){
   if(!state.runTeam){toast('Select a team first',true);return;}
   if(chat.isRunning){toast('Already running',true);return;}
   if(!chat.turnQueue.length)buildTurnQueue(state.runTeam);
+  const director=APP.directorName||'The operator';
   input.value='';input.style.height='auto';
-  chat.history.push({role:'user',content:text,name:'MIKE'});
-  addChatBubble('MIKE','Director','#f59e0b',text,true);
+  chat.history.push({role:'user',content:text,name:director});
+  addChatBubble(director,'Director','#f59e0b',text,true);
   if(chat.mode==='auto')await runAutoRound();
 }
 

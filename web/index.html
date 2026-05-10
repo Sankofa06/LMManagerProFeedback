@@ -43,7 +43,7 @@
     <div id="setup-banner-sub" style="font-size:10px;color:var(--tx3);font-family:var(--mono);margin-top:2px;display:none"></div>
   </div>
   <button class="btn btn-sm btn-primary" id="setup-banner-btn" onclick="setupBannerAction()"></button>
-  <button style="background:none;border:none;color:var(--tx4);cursor:pointer;font-size:16px;padding:0 4px" onclick="document.getElementById('setup-banner').style.display='none'">✕</button>
+  <button style="background:none;border:none;color:var(--tx4);cursor:pointer;font-size:16px;padding:0 4px" onclick="dismissSetupBanner()">✕</button>
 </div>
 <div id="body">
 
@@ -469,7 +469,7 @@
               <div style="font-size:9px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">System Prompt <span style="color:var(--tx3);text-transform:none;letter-spacing:0;font-size:9px">· auto-generated · edit freely</span></div>
               <button class="btn btn-sm" style="font-size:9px;padding:2px 7px" onclick="amAutoPrompt(true)">↺ Regenerate</button>
             </div>
-            <textarea class="prompt-edit-area" id="am-prompt" style="min-height:80px" placeholder="You are [Name], a [role]. MIKE is the Director."></textarea>
+            <textarea class="prompt-edit-area" id="am-prompt" style="min-height:80px" placeholder="You are [Name], a [role]. The operator is the Director."></textarea>
           </div>
           <button class="btn btn-primary" onclick="addModelFromModal()" style="align-self:flex-end">+ Add Engineer</button>
         </div>
@@ -623,8 +623,8 @@
         <input class="inp sp-ctrl" id="sp-brand-name" type="text" value="LM Manager Pro Web" style="width:120px;font-size:12px" onchange="applyBrandName(this.value)">
       </div>
       <div class="sp-row">
-        <label class="sp-label">Director name<small>Replaces "MIKE" in every auto-generated persona prompt. Set this to your own name so models address you correctly during interviews and group chat.</small></label>
-        <input class="inp sp-ctrl" id="sp-director-name" type="text" value="MIKE" style="width:100px;font-size:12px" onchange="applyDirectorName(this.value)">
+        <label class="sp-label">Director name<small>Replaces the default director label in every auto-generated persona prompt. Set this to your own name so models address you correctly during interviews and group chat.</small></label>
+        <input class="inp sp-ctrl" id="sp-director-name" type="text" value="The operator" style="width:140px;font-size:12px" onchange="applyDirectorName(this.value)">
       </div>
       <div class="sp-row" style="flex-direction:column;align-items:flex-start;gap:6px">
         <label class="sp-label" style="margin-bottom:0">Global system suffix<small>A sentence appended to every auto-generated prompt. Use this for project-wide context every model should know — e.g. the tech stack, the app name, your coding style. Only applied to non-overridden prompts.</small></label>

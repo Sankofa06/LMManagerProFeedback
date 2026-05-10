@@ -107,7 +107,7 @@ const DEFAULT_APP_SETTINGS={
   defaultTemp:0.5,
   thinkingEnabled:true,
   // Director
-  directorName:'MIKE',
+  directorName:'The operator',
   globalSuffix:'',
   brandName:'LM Manager Pro Web',
   // LM Link
@@ -213,7 +213,7 @@ function buildRolePromptLines(statusId, specId, secondaryIds=[]){
 function generatePrompt(r){
   const name=r.nickname&&r.nickname.trim()?r.nickname.trim():`${r.first||''} ${r.last||''}`.trim();
   const role=r.role||'Generalist';
-  const director=APP.directorName||'MIKE';
+  const director=APP.directorName||'The operator';
   const suffix=APP.globalSuffix&&APP.globalSuffix.trim()?` ${APP.globalSuffix.trim()}`:'';
   const base=`You are ${name}, a ${role}. ${director} is the Director.${suffix}`;
   const roleLines=buildRolePromptLines(r.statusId||r.proficiencyId||'', r.specializationId||'', r.secondaryIds||[]);
@@ -258,4 +258,3 @@ const rclr=r=>{
   const dark=document.documentElement.getAttribute('data-theme')==='dark';
   return specColor(r.specializationId||archetypeFor(r.role||''), r.statusId||r.proficiencyId||'senior', dark);
 };
-

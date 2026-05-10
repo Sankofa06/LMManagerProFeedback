@@ -7,8 +7,9 @@ sendChatMessage=async function(){
   if(chat.isRunning){toast('Already running',true);return;}
   if(!chat.turnQueue.length)buildTurnQueue(state.runTeam);
   if(state.compareMode){
+    const director=APP.directorName||'The operator';
     input.value='';input.style.height='auto';
-    chat.history.push({role:'user',content:text,name:'MIKE'});
+    chat.history.push({role:'user',content:text,name:director});
     await runCompare(text);
     return;
   }
@@ -608,4 +609,3 @@ function saveRosterEdit(rid){
   renderRosterDetail(r);
   toast(`${dispName(r)} saved ✓`);
 }
-

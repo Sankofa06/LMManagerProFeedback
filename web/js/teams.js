@@ -1,6 +1,12 @@
 /* ── TEAMS ── */
 function renderTeams(){
   const scroll=document.getElementById('teams-scroll');scroll.innerHTML='';
+  const detail=document.getElementById('team-detail');
+  if(!TEAMS.length){
+    scroll.innerHTML='<div style="padding:24px 18px;text-align:center;color:var(--tx3);font-size:12px;font-family:var(--mono);line-height:1.6">No teams yet.<br><span style="font-size:11px;color:var(--tx4)">Add models to the roster, then group them here before running chats or episodes.</span></div>';
+    if(detail)detail.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:24px;color:var(--tx3);font-size:12px;font-family:var(--mono);text-align:center;line-height:1.6">Create a team once your roster has at least one model.</div>';
+    return;
+  }
   TEAMS.forEach(t=>{
     const div=document.createElement('div');div.className='team-row'+(state.selTeam===t.id?' selected':'');
     // v8.3: compute average team score from members' aggregate scores
@@ -17,6 +23,9 @@ function renderTeams(){
     scroll.appendChild(div);
   });
   if(state.selTeam){const t=TEAMS.find(x=>x.id===state.selTeam);if(t)renderTeamDetail(t);}
+  else if(detail){
+    detail.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:24px;color:var(--tx3);font-size:12px;font-family:var(--mono);text-align:center;line-height:1.6">Select a team to inspect its lineup and run queue.</div>';
+  }
 }
 
 function renderTeamDetail(t){
@@ -127,4 +136,3 @@ function removeMember(tid,rid){const t=TEAMS.find(x=>x.id===tid);if(t){t.members
 function deleteTeam(id){if(!confirm('Delete team?'))return;TEAMS=TEAMS.filter(t=>t.id!==id);state.selTeam=null;clearTeamFocus();save();renderTeams();document.getElementById('team-detail').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--tx3);font-size:12px;font-family:var(--mono)">Select a team</div>';}
 function addTeam(){const name=prompt('Team name:');if(!name)return;const id='t'+Date.now();TEAMS.push({id,name,icon:'⬡',color:'#888',members:[],note:''});save();state.selTeam=id;setTeamFocus(id);renderTeams();renderTeamDetail(TEAMS.find(t=>t.id===id));}
 function runTeamDirect(tid){state.runTeam=TEAMS.find(t=>t.id===tid);setNav('run');}
-
