@@ -133,6 +133,26 @@ function setTeamTab(tab){
 
 function addMember(tid,rid){const t=TEAMS.find(x=>x.id===tid);if(t&&!t.members.includes(rid)){t.members.push(rid);save();renderTeams();renderTeamDetail(t);}}
 function removeMember(tid,rid){const t=TEAMS.find(x=>x.id===tid);if(t){t.members=t.members.filter(x=>x!==rid);save();renderTeams();renderTeamDetail(t);}}
-function deleteTeam(id){if(!confirm('Delete team?'))return;TEAMS=TEAMS.filter(t=>t.id!==id);state.selTeam=null;clearTeamFocus();save();renderTeams();document.getElementById('team-detail').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--tx3);font-size:12px;font-family:var(--mono)">Select a team</div>';}
-function addTeam(){const name=prompt('Team name:');if(!name)return;const id='t'+Date.now();TEAMS.push({id,name,icon:'⬡',color:'#888',members:[],note:''});save();state.selTeam=id;setTeamFocus(id);renderTeams();renderTeamDetail(TEAMS.find(t=>t.id===id));}
+async function deleteTeam(id){
+  const ok=await openAppDialog({
+    title:'Delete Team',
+    message:'Delete this team?\n\nThe team configuration will be removed, but roster members will stay in the app.',
+    confirmLabel:'Delete team',
+    danger:true,
+  });
+  if(!ok)return;
+  TEAMS=TEAMS.filter(t=>t.id!==id);state.selTeam=null;clearTeamFocus();save();renderTeams();document.getElementById('team-detail').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--tx3);font-size:12px;font-family:var(--mono)">Select a team</div>';
+}
+async function addTeam(){
+  const name=await openAppDialog({
+    mode:'prompt',
+    title:'Create Team',
+    message:'Name the new team. You can edit members and notes after it is created.',
+    confirmLabel:'Create team',
+    placeholder:'e.g. Review Squad',
+    validate:value=>value?'':'Team name is required',
+  });
+  if(!name)return;
+  const id='t'+Date.now();TEAMS.push({id,name,icon:'⬡',color:'#888',members:[],note:''});save();state.selTeam=id;setTeamFocus(id);renderTeams();renderTeamDetail(TEAMS.find(t=>t.id===id));
+}
 function runTeamDirect(tid){state.runTeam=TEAMS.find(t=>t.id===tid);setNav('run');}

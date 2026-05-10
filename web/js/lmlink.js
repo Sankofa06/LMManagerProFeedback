@@ -199,8 +199,14 @@ function syncModelDataFromApi(){
   toast(`Synced ${updated} field${updated!==1?'s':''} across roster ✓`);
 }
 
-function autoGenerateAllNames(){
-  if(!confirm(`Regenerate First + Middle names for all ${ROSTER.length} engineers from their model IDs? Last name will be set to their current role. Nicknames are untouched. This cannot be undone.`))return;
+async function autoGenerateAllNames(){
+  const ok=await openAppDialog({
+    title:'Regenerate Names',
+    message:`Regenerate First + Middle names for all ${ROSTER.length} engineers from their model IDs?\n\nLast name will be set to their current role. Nicknames are untouched. This cannot be undone.`,
+    confirmLabel:'Regenerate names',
+    danger:true,
+  });
+  if(!ok)return;
   ROSTER.forEach(r=>autoGenerateNames(r,true));
   save();renderRoster();renderMachines();renderSurvivorIf();
   toast(`Regenerated names for ${ROSTER.length} engineers ✓`);

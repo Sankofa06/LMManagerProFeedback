@@ -39,13 +39,19 @@ function renderMachineListEdit(){
   el.innerHTML=MACHINES.map(mc=>renderMachineEditRow(mc)).join('');
 }
 
-function deleteMachine(mid){
+async function deleteMachine(mid){
   const m=MACHINES.find(x=>x.id===mid);if(!m)return;
   const affected=ROSTER.filter(r=>r.machine===mid).length;
   const msg=affected>0
     ?`Delete "${m.name}"? ${affected} engineer(s) assigned to it will lose their machine assignment.`
     :`Delete "${m.name}"?`;
-  if(!confirm(msg))return;
+  const ok=await openAppDialog({
+    title:'Delete Machine',
+    message:msg,
+    confirmLabel:'Delete machine',
+    danger:true,
+  });
+  if(!ok)return;
   MACHINES.splice(MACHINES.findIndex(x=>x.id===mid),1);
   saveMachines();renderMachines();renderMachineListEdit();updateNodesSub();
   toast(`${m.name} removed`);

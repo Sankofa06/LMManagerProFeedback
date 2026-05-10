@@ -613,6 +613,10 @@
         <label class="sp-label">Enable reasoning<small>Sends <code>reasoning: "on"</code> to the LM Studio v1 API. Models that support extended reasoning (DeepSeek R1, Qwen3, QwQ) will activate it. LM Studio silently ignores this for models that don't support it. Increases quality on hard tasks but costs more time and tokens.</small></label>
         <input type="checkbox" id="sp-thinking" style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0" onchange="APP.thinkingEnabled=this.checked;saveApp()">
       </div>
+      <div class="sp-row">
+        <label class="sp-label">Auto-check machines on launch<small>When enabled, the app runs Check All every time the page loads. Leave this off if you want faster startup or often open the app away from your LM Studio machines.</small></label>
+        <input type="checkbox" id="sp-auto-check-machines" style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0" onchange="APP.autoCheckMachines=this.checked;saveApp()">
+      </div>
     </div>
 
     <!-- DIRECTOR -->
@@ -1047,6 +1051,26 @@
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="btn btn-sm" onclick="closeCustomRoleModal()">Cancel</button>
         <button class="btn btn-sm btn-primary" onclick="saveCustomRole()">Save Role</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- APP DIALOG -->
+<div id="app-dialog-modal" onclick="if(event.target.id==='app-dialog-modal')closeAppDialog(false)" style="display:none;position:fixed;inset:0;z-index:2200;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg1);border:1px solid var(--line2);border-radius:12px;width:100%;max-width:440px;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="app-dialog-title">Confirm</div>
+      <button class="modal-close" onclick="closeAppDialog(false)">✕</button>
+    </div>
+    <div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+      <div id="app-dialog-message" style="font-size:12px;color:var(--tx2);font-family:var(--mono);line-height:1.6;white-space:pre-wrap"></div>
+      <div id="app-dialog-input-wrap" style="display:none;flex-direction:column;gap:6px">
+        <label for="app-dialog-input" style="font-size:10px;color:var(--tx4);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Value</label>
+        <input class="inp" id="app-dialog-input" type="text" style="font-size:12px">
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn btn-sm" id="app-dialog-cancel" onclick="closeAppDialog(false)">Cancel</button>
+        <button class="btn btn-sm btn-danger" id="app-dialog-confirm" onclick="submitAppDialog()">Confirm</button>
       </div>
     </div>
   </div>

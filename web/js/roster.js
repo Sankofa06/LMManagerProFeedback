@@ -328,9 +328,15 @@ function saveTemp(rid){
   const sl=document.getElementById('temp-slider-'+rid);if(!sl)return;
   r.temp=parseFloat(sl.value);save();toast(`${r.first} temp → ${r.temp.toFixed(2)}`);
 }
-function resetStats(rid){
+async function resetStats(rid){
   const r=ROSTER.find(x=>x.id===rid);if(!r)return;
-  if(!confirm(`Reset all stats for ${dispName(r)}? Status will be set to Unhired.`))return;
+  const ok=await openAppDialog({
+    title:'Reset Model Stats',
+    message:`Reset all stats for ${dispName(r)}?\n\nStatus will be set to Unhired.`,
+    confirmLabel:'Reset stats',
+    danger:true,
+  });
+  if(!ok)return;
   const dark=document.documentElement.getAttribute('data-theme')==='dark';
   r.totalScore=0;r.episodes=0;r.avgTps=0;r.avgTtft=0;r.sessions=[];r.catScores={Code:[],Reasoning:[],Creative:[],General:[]};
   r.torches=3;r.immunity=false;

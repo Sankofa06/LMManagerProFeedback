@@ -106,6 +106,7 @@ const DEFAULT_APP_SETTINGS={
   requestTimeoutSec:180,
   defaultTemp:0.5,
   thinkingEnabled:true,
+  autoCheckMachines:false,
   // Director
   directorName:'The operator',
   globalSuffix:'',

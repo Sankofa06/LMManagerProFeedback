@@ -24,6 +24,7 @@ function updateSettingsPanel(){
   setSpVal('sp-timeout',      APP.requestTimeoutSec??180);
   setSpVal('sp-default-temp', APP.defaultTemp??0.5);
   setSpChecked('sp-thinking', APP.thinkingEnabled??false);
+  setSpChecked('sp-auto-check-machines', APP.autoCheckMachines??false);
 
   // Director
   setSpVal('sp-director-name', APP.directorName||'The operator');
@@ -91,12 +92,19 @@ function applyBrandName(name){
   rebuildAndSaveInterviewPrompt();
 }
 
-function applyDirectorName(name){
+async function applyDirectorName(name){
   APP.directorName=name.trim()||'The operator';
   saveApp();
   updateIvBuilderPanel();
   const affected=ROSTER.filter(r=>!r.promptOverridden).length;
-  if(affected>0&&confirm(`Update ${affected} auto-generated prompts to use "${APP.directorName}" as Director?`)){
+  const shouldUpdate=affected>0
+    ?await openAppDialog({
+      title:'Update Auto-Generated Prompts',
+      message:`Update ${affected} auto-generated prompts to use "${APP.directorName}" as Director?`,
+      confirmLabel:'Update prompts',
+    })
+    :false;
+  if(shouldUpdate){
     ROSTER.filter(r=>!r.promptOverridden).forEach(r=>r.prompt=generatePrompt(r));
     save();toast(`Prompts updated to use "${APP.directorName}" ✓`);
   }
@@ -232,7 +240,5 @@ function resetInterviewPromptToDefault(){
 // Legacy stub — old single-textarea prompt editor
 function setIvPreset(p){ setIvProductPreset(p); }
 function onIvBodyChange(v){ onIvProductChange(v); }
-
-
 
 

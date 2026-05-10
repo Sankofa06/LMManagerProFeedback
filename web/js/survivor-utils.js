@@ -344,11 +344,17 @@ function triggerFullImport(){document.getElementById('import-full-file').click()
 function importFullApp(evt){
   const file=evt.target.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=e=>{
+  reader.onload=async e=>{
     try{
       const d=JSON.parse(e.target.result);
       if(d.version!=='lmmp_full_v1')throw new Error('Not a full app export file');
-      if(!confirm(`Restore full app from ${new Date(d.exported).toLocaleDateString()}?\n\nThis overwrites everything — roster, machines, settings, episodes, and custom roles. Cannot be undone.`))return;
+      const ok=await openAppDialog({
+        title:'Restore Full App',
+        message:`Restore full app from ${new Date(d.exported).toLocaleDateString()}?\n\nThis overwrites everything — roster, machines, settings, episodes, and custom roles. Cannot be undone.`,
+        confirmLabel:'Restore full app',
+        danger:true,
+      });
+      if(!ok)return;
       if(d.app){Object.assign(APP,d.app);saveApp();}
       if(d.roster)ROSTER=d.roster;
       if(d.teams)TEAMS=d.teams;
@@ -429,11 +435,17 @@ function triggerImport(){document.getElementById('import-file').click();}
 function importData(evt){
   const file=evt.target.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=e=>{
+  reader.onload=async e=>{
     try{
       const d=JSON.parse(e.target.result);
       if(!d.roster||!Array.isArray(d.roster))throw new Error('Invalid format');
-      if(!confirm(`Import ${d.roster.length} models from ep ${d.epCount||0}? This will overwrite current data.`))return;
+      const ok=await openAppDialog({
+        title:'Import Roster Backup',
+        message:`Import ${d.roster.length} models from ep ${d.epCount||0}?\n\nThis will overwrite current roster data.`,
+        confirmLabel:'Import backup',
+        danger:true,
+      });
+      if(!ok)return;
       ROSTER=d.roster;TEAMS=d.teams||TEAMS;state.epCount=d.epCount||0;
       ROSTER.forEach(r=>rebuildCatScores(r));
       save();renderMachines();renderRoster();renderTeams();renderRunPanel();renderSurvivor();
@@ -446,4 +458,3 @@ function importData(evt){
 
 /* ── EPISODE BADGE ── */
 function updateEpBadge(){const el=document.getElementById('ep-badge');if(el)el.textContent='Ep '+state.epCount;}
-

@@ -1,6 +1,6 @@
 # LM Manager Pro — Public Website
 
-Static site for the LM Manager Pro privacy policy and feedback page.
+Static site for the LM Manager Pro landing page, privacy policy, and feedback page.
 Pure HTML / CSS / vanilla JS — no build step, no dependencies, no backend,
 no analytics. Matches the app's privacy-first stance.
 
@@ -8,7 +8,8 @@ no analytics. Matches the app's privacy-first stance.
 
 | File | Purpose | Deployed URL |
 |---|---|---|
-| `index.html` | Feedback page (browse + submit GitHub issues) | `https://sankofa06.github.io/LMManagerProFeedback/` |
+| `index.html` | Product landing page | `https://sankofa06.github.io/LMManagerProFeedback/` |
+| `feedback.html` | Feedback page (browse + submit GitHub issues) | `https://sankofa06.github.io/LMManagerProFeedback/feedback.html` |
 | `privacy.html` | Privacy Policy | `https://sankofa06.github.io/LMManagerProFeedback/privacy.html` |
 
 ## Deployment
@@ -34,11 +35,13 @@ Copy the contents of this `website/` directory into the **root** of the
 ```
 LMManagerProFeedback/
 ├── index.html
+├── feedback.html
 ├── privacy.html
 ├── assets/
 │   ├── styles.css
 │   ├── feedback.js
-│   └── icon.svg
+│   ├── icon.svg
+│   └── screenshots/
 └── .github/
     └── ISSUE_TEMPLATE/
         ├── config.yml
@@ -56,11 +59,13 @@ GitHub Pages will publish within a minute or two.
 ### Verify
 
 - Open `https://sankofa06.github.io/LMManagerProFeedback/` and confirm the
+  landing page loads with screenshots and links to the web app, feedback, and privacy pages.
+- Open `https://sankofa06.github.io/LMManagerProFeedback/feedback.html` and confirm the
   feedback page loads with the empty state (until issues exist).
 - Open `…/privacy.html` and proofread.
 - Create a test issue with a 👍 reaction in the repo, then reload — it
   should appear at the top under the default "Top (👍)" sort.
-- DevTools → Network: only one outbound request, to
+- On `feedback.html`, DevTools → Network: only one outbound request, to
   `api.github.com/repos/sankofa06/LMManagerProFeedback/issues`. No fonts,
   no analytics, no third-party scripts.
 
@@ -70,7 +75,7 @@ After deploy, edit `AppStore/submission-checklist.md` (in the main app
 repo) and fill in:
 
 - **Privacy Policy URL:** `https://sankofa06.github.io/LMManagerProFeedback/privacy.html`
-- **Support URL:** `https://sankofa06.github.io/LMManagerProFeedback/`
+- **Support URL:** `https://sankofa06.github.io/LMManagerProFeedback/feedback.html`
 
 ## How the feedback page works
 
@@ -89,11 +94,11 @@ repo) and fill in:
 
 ## Local preview
 
-Open `index.html` directly in a browser (`file://` URLs work fine for
-both pages and the API call). For a closer-to-production preview:
+Open `index.html`, `feedback.html`, or `privacy.html` directly in a browser
+(`file://` URLs work fine for the static pages and the feedback API call).
+For a closer-to-production preview:
 
 ```bash
-cd website
 python3 -m http.server 8000
 # then open http://localhost:8000
 ```

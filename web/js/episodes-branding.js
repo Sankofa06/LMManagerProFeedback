@@ -179,8 +179,16 @@ const TASK_TYPES=[
   {id:'vote',icon:'🔥',label:'Vote Off',color:'var(--red)',desc:'Elimination checkpoint — snuff lowest performer'},
 ];
 
-function newEpisode(){
-  const name=prompt('Episode name:',`Episode ${state.epCount+1}`);
+async function newEpisode(){
+  const name=await openAppDialog({
+    mode:'prompt',
+    title:'Create Episode',
+    message:'Name the new episode. You can change its tasks and icon after it is created.',
+    confirmLabel:'Create episode',
+    placeholder:`Episode ${state.epCount+1}`,
+    initialValue:`Episode ${state.epCount+1}`,
+    validate:value=>value?'':'Episode name is required',
+  });
   if(!name)return;
   const ep={id:'ep-'+Date.now(),name,icon:'🎬',team:state.runTeam?.id||null,tasks:[],created:new Date().toISOString(),archived:[]};
   EPISODES.push(ep);
@@ -338,8 +346,14 @@ function cycleEpIcon(epId){
   ep.icon=EP_ICONS[(idx+1)%EP_ICONS.length];
   saveEpisodes();renderEpisodes();renderEpisodeDetail(ep);
 }
-function deleteEpisode(id){
-  if(!confirm('Delete this episode?'))return;
+async function deleteEpisode(id){
+  const ok=await openAppDialog({
+    title:'Delete Episode',
+    message:'Delete this episode?\n\nIts task list and any paused state will be removed.',
+    confirmLabel:'Delete episode',
+    danger:true,
+  });
+  if(!ok)return;
   EPISODES=EPISODES.filter(e=>e.id!==id);
   saveEpisodes();state.selEpisode=null;renderEpisodes();
   const detail=document.getElementById('episode-detail');
@@ -550,4 +564,3 @@ function resetIvPromptInline(rid){
   const mta=document.getElementById('iv-prompt-textarea');if(mta)mta.value=DEFAULT_INTERVIEW_PROMPT;
   toast('Interview prompt reset to default');
 }
-

@@ -3,13 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LM Manager Pro — Feedback</title>
-  <meta name="description" content="Browse, upvote, and submit feature requests and bug reports for LM Manager Pro." />
+  <title>LM Manager Pro - Local &amp; Cloud AI Orchestration</title>
+  <meta name="description" content="Connect LM Studio servers and top cloud AI providers. Run persona teams, benchmark with structured episodes, and track model performance." />
   <meta name="color-scheme" content="light dark" />
+  <meta property="og:title" content="LM Manager Pro" />
+  <meta property="og:description" content="Local and cloud AI orchestration for developers and AI enthusiasts." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/screenshots/machines-dark.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="LM Manager Pro" />
+  <meta name="twitter:description" content="Connect LM Studio servers, run persona teams, benchmark episodes, and compare model performance." />
+  <meta name="twitter:image" content="assets/screenshots/machines-dark.png" />
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
-<body>
+<body class="landing-page">
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="./">
@@ -17,138 +25,146 @@
         <span class="brand-mark">LM Manager Pro</span>
       </a>
       <nav class="site-nav">
-        <a href="./" class="active">Feedback</a>
+        <a href="./" class="active">Home</a>
+        <a href="web/">Web App</a>
+        <a href="feedback.html">Feedback</a>
         <a href="privacy.html">Privacy</a>
       </nav>
     </div>
   </header>
 
-  <main class="container">
-    <section class="hero hero-feedback">
-      <div class="hero-copy">
-        <span class="eyebrow">Community Queue</span>
-        <h1>Ship the right fixes first.</h1>
+  <main class="container landing">
+    <section class="landing-hero">
+      <div class="landing-copy">
+        <span class="eyebrow">Local &amp; Cloud AI Orchestration</span>
+        <h1>Run your AI stack from one command center.</h1>
         <p class="tagline">
-          Browse active requests, upvote what matters, and submit the missing bug
-          report or feature idea.
+          Connect LM Studio servers and top cloud AI providers. Run persona
+          teams, benchmark with structured episodes, and track model performance.
         </p>
         <div class="hero-actions">
-          <button id="submit-btn" class="btn primary">+ Submit Feedback</button>
-          <a class="btn ghost" href="privacy.html">View Privacy Policy</a>
+          <a class="btn primary" href="web/">Open Web App</a>
+          <a class="btn ghost" href="feedback.html">Send Feedback</a>
+          <a class="btn ghost" href="privacy.html">Privacy</a>
+        </div>
+        <div class="hero-badges" aria-label="Product highlights">
+          <span class="pill">LM Studio</span>
+          <span class="pill">OpenAI</span>
+          <span class="pill">Anthropic</span>
+          <span class="pill">Google</span>
+          <span class="pill">Qwen</span>
         </div>
       </div>
-      <div class="hero-panel">
-        <div class="hero-panel-head">
-          <span class="hero-panel-kicker">Live Snapshot</span>
-          <span id="summary-state" class="hero-panel-note">Waiting for issues…</span>
+
+      <figure class="device-showcase" aria-label="LM Manager Pro app screenshot">
+        <div class="device-frame">
+          <img src="assets/screenshots/machines-dark.png" alt="LM Manager Pro machine management screen" />
         </div>
-        <div class="summary-grid" aria-label="Feedback summary">
-          <article class="summary-card">
-            <span class="summary-label">Visible</span>
-            <strong id="summary-visible">0</strong>
-          </article>
-          <article class="summary-card">
-            <span class="summary-label">Open</span>
-            <strong id="summary-open">0</strong>
-          </article>
-          <article class="summary-card">
-            <span class="summary-label">Closed</span>
-            <strong id="summary-closed">0</strong>
-          </article>
-          <article class="summary-card">
-            <span class="summary-label">Labels</span>
-            <strong id="summary-labels">0</strong>
-          </article>
-        </div>
+      </figure>
+    </section>
+
+    <section class="landing-band">
+      <div class="surface landing-intro">
+        <span class="eyebrow">Built For Power Users</span>
+        <h2>Local model infrastructure, cloud models, teams, benchmarks, and history in one workflow.</h2>
+        <p>
+          LM Manager Pro is a native iOS and iPadOS app for developers and AI
+          enthusiasts who run their own language model infrastructure. It keeps
+          local nodes, cloud providers, personas, episodes, comparisons, and
+          performance history close together.
+        </p>
       </div>
     </section>
 
-    <section class="surface toolbar-surface" aria-label="Filter and sort">
+    <section class="feature-grid" aria-label="Core features">
+      <article class="surface feature-card">
+        <span class="feature-kicker">Inference Nodes</span>
+        <h2>Manage every server at a glance.</h2>
+        <p>Add Mac Minis, workstations, or Tailscale peers as inference nodes. See loaded models, network health, and VRAM usage without switching tools.</p>
+      </article>
+      <article class="surface feature-card">
+        <span class="feature-kicker">AI Personas</span>
+        <h2>Build an engineering team.</h2>
+        <p>Give each model a name, role, personality overlay, and custom system prompt. Assign local and cloud models to the work they do best.</p>
+      </article>
+      <article class="surface feature-card">
+        <span class="feature-kicker">Structured Episodes</span>
+        <h2>Benchmark repeatable workflows.</h2>
+        <p>Run multi-step prompt scripts with pause points and archived history, then compare results across models, teams, and sessions.</p>
+      </article>
+      <article class="surface feature-card">
+        <span class="feature-kicker">Compare Mode</span>
+        <h2>Watch models compete side by side.</h2>
+        <p>Run the same prompt across two to four models in parallel with live TPS, TTFT, token count, and completion time.</p>
+      </article>
+      <article class="surface feature-card">
+        <span class="feature-kicker">Timeline</span>
+        <h2>Search every response later.</h2>
+        <p>Browse a chronological feed of AI responses across sessions, sorted by newest, fastest TPS, most tokens, or session type.</p>
+      </article>
+      <article class="surface feature-card">
+        <span class="feature-kicker">Local First</span>
+        <h2>Your data stays on your device.</h2>
+        <p>No accounts, no analytics, and no telemetry. Export your full dataset as JSON for backup or migration when you need it.</p>
+      </article>
+    </section>
+
+    <section class="surface screenshot-section">
       <div class="surface-head">
         <div>
-          <h2>Browse Feedback</h2>
-          <p>Filter the queue by keyword, state, label, or discussion level.</p>
+          <h2>Product Screens</h2>
+          <p>Real App Store screenshots from the current LM Manager Pro build.</p>
         </div>
       </div>
-      <div class="toolbar">
-        <input
-          type="search"
-          id="search-input"
-          placeholder="Search feedback, keywords, or issue text…"
-          aria-label="Search feedback"
-        />
-        <label>
-          Sort
-          <select id="sort-select" aria-label="Sort">
-            <option value="top">Top (👍)</option>
-            <option value="newest">Newest</option>
-            <option value="comments">Most discussed</option>
-          </select>
-        </label>
-        <label>
-          Label
-          <select id="label-select" aria-label="Filter by label">
-            <option value="">All labels</option>
-          </select>
-        </label>
-        <label>
-          State
-          <select id="state-select" aria-label="Filter by state">
-            <option value="open">Open</option>
-            <option value="all">All</option>
-            <option value="closed">Closed</option>
-          </select>
-        </label>
+      <div class="screenshot-strip">
+        <figure>
+          <img src="assets/screenshots/machines-dark.png" alt="Machine list screenshot" />
+          <figcaption>Machines</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/screenshots/chat-dark.png" alt="Streaming chat screenshot" />
+          <figcaption>Chat</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/screenshots/personas-dark.png" alt="Persona roster screenshot" />
+          <figcaption>Personas</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/screenshots/episodes-dark.png" alt="Episode execution screenshot" />
+          <figcaption>Episodes</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/screenshots/leaderboard-dark.png" alt="Leaderboard screenshot" />
+          <figcaption>Leaderboard</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/screenshots/compare-dark.png" alt="Compare mode screenshot" />
+          <figcaption>Compare</figcaption>
+        </figure>
       </div>
     </section>
 
-    <div id="status-banner" role="status" hidden></div>
-
-    <section class="surface issue-surface">
-      <div class="surface-head">
-        <div>
-          <h2>Issue Board</h2>
-          <p id="results-copy">Loading the latest feedback from GitHub…</p>
-        </div>
+    <section class="landing-cta surface">
+      <div>
+        <span class="eyebrow">Support Site</span>
+        <h2>Browse the public feedback queue.</h2>
+        <p>Upvote requests, report bugs, and keep privacy details one click away.</p>
       </div>
-      <ul id="issue-list" aria-live="polite"></ul>
+      <div class="hero-actions">
+        <a class="btn primary" href="feedback.html">Open Feedback</a>
+        <a class="btn ghost" href="privacy.html">Read Privacy Policy</a>
+      </div>
     </section>
-
-    <dialog id="submit-modal" aria-labelledby="modal-title">
-      <form id="submit-form">
-        <h2 id="modal-title">Submit Feedback</h2>
-        <label>
-          Type
-          <select id="issue-type">
-            <option value="feature request">Feature Request</option>
-            <option value="bug">Bug Report</option>
-          </select>
-        </label>
-        <label>
-          Title <span class="required" aria-hidden="true">*</span>
-          <input type="text" id="issue-title" required maxlength="200" placeholder="Brief description…" />
-        </label>
-        <label>
-          Details <span class="optional">(optional)</span>
-          <textarea id="issue-body" rows="5" placeholder="Steps to reproduce, expected behaviour, etc."></textarea>
-        </label>
-        <p id="modal-error" class="modal-error" hidden></p>
-        <div class="modal-actions">
-          <button type="button" id="modal-cancel" class="btn">Cancel</button>
-          <button type="submit" id="modal-submit" class="btn primary">Submit</button>
-        </div>
-      </form>
-    </dialog>
   </main>
 
   <footer class="site-footer">
     <p>
-      <a href="privacy.html">Privacy Policy</a> ·
-      <a id="repo-link" href="#" target="_blank" rel="noopener">GitHub Repo</a>
+      <a href="./">Home</a> ·
+      <a href="web/">Web App</a> ·
+      <a href="feedback.html">Feedback</a> ·
+      <a href="privacy.html">Privacy Policy</a>
     </p>
     <p>© LM Manager Pro</p>
   </footer>
-
-  <script src="assets/feedback.js" defer></script>
 </body>
 </html>

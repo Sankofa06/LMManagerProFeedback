@@ -1,6 +1,86 @@
+let _appDialogResolve=null;
+let _appDialogMode='confirm';
+let _appDialogValidator=null;
+
+function openAppDialog(opts={}){
+  const modal=document.getElementById('app-dialog-modal');
+  const titleEl=document.getElementById('app-dialog-title');
+  const msgEl=document.getElementById('app-dialog-message');
+  const inputWrap=document.getElementById('app-dialog-input-wrap');
+  const inputEl=document.getElementById('app-dialog-input');
+  const cancelBtn=document.getElementById('app-dialog-cancel');
+  const confirmBtn=document.getElementById('app-dialog-confirm');
+  if(!modal||!titleEl||!msgEl||!inputWrap||!inputEl||!cancelBtn||!confirmBtn)return Promise.resolve(null);
+
+  _appDialogMode=opts.mode||'confirm';
+  _appDialogValidator=opts.validate||null;
+  titleEl.textContent=opts.title||(_appDialogMode==='prompt'?'Enter value':'Confirm');
+  msgEl.textContent=opts.message||'';
+  cancelBtn.textContent=opts.cancelLabel||'Cancel';
+  confirmBtn.textContent=opts.confirmLabel||(_appDialogMode==='prompt'?'Save':'Confirm');
+  confirmBtn.className=`btn btn-sm ${opts.danger?'btn-danger':'btn-primary'}`;
+
+  if(_appDialogMode==='prompt'){
+    inputWrap.style.display='flex';
+    inputEl.value=opts.initialValue||'';
+    inputEl.placeholder=opts.placeholder||'';
+    setTimeout(()=>inputEl.focus(),0);
+  } else {
+    inputWrap.style.display='none';
+    inputEl.value='';
+    setTimeout(()=>confirmBtn.focus(),0);
+  }
+
+  modal.style.display='flex';
+  return new Promise(resolve=>{
+    _appDialogResolve=resolve;
+  });
+}
+
+function closeAppDialog(result){
+  const modal=document.getElementById('app-dialog-modal');
+  const inputEl=document.getElementById('app-dialog-input');
+  if(modal)modal.style.display='none';
+  if(inputEl)inputEl.value='';
+  const resolve=_appDialogResolve;
+  _appDialogResolve=null;
+  _appDialogValidator=null;
+  if(resolve)resolve(result);
+}
+
+function submitAppDialog(){
+  if(_appDialogMode==='prompt'){
+    const inputEl=document.getElementById('app-dialog-input');
+    const value=(inputEl?.value||'').trim();
+    if(_appDialogValidator){
+      const err=_appDialogValidator(value);
+      if(err){toast(err,true);return;}
+    }
+    closeAppDialog(value);
+    return;
+  }
+  closeAppDialog(true);
+}
+
+document.addEventListener('keydown',e=>{
+  const modal=document.getElementById('app-dialog-modal');
+  if(!modal||modal.style.display!=='flex')return;
+  if(e.key==='Escape'){e.preventDefault();closeAppDialog(false);return;}
+  if(e.key==='Enter'&&_appDialogMode==='prompt'){
+    const target=e.target;
+    if(target&&target.id==='app-dialog-input'){e.preventDefault();submitAppDialog();}
+  }
+});
+
 /* ── V6: GLOBAL STATS RESET ── */
-function resetAllStats(){
-  if(!confirm(`Reset ALL stats for all ${ROSTER.length} engineers? Roster, teams, machines, and presets are kept. Status resets to Unhired for everyone. This cannot be undone.`))return;
+async function resetAllStats(){
+  const ok=await openAppDialog({
+    title:'Reset All Stats',
+    message:`Reset ALL stats for all ${ROSTER.length} engineers?\n\nRoster, teams, machines, and presets are kept. Status resets to Unhired for everyone. This cannot be undone.`,
+    confirmLabel:'Reset stats',
+    danger:true,
+  });
+  if(!ok)return;
   const dark=document.documentElement.getAttribute('data-theme')==='dark';
   ROSTER.forEach(r=>{
     r.totalScore=0;r.episodes=0;r.avgTps=0;r.avgTtft=0;
@@ -21,8 +101,14 @@ function resetAllStats(){
 }
 
 /* ── WIPE ALL DATA ── */
-function clearRoster(){
-  if(!confirm(`Clear all ${ROSTER.length} models from the roster?\n\nMachines, teams, settings, and presets are kept.\nThis cannot be undone.`))return;
+async function clearRoster(){
+  const ok=await openAppDialog({
+    title:'Clear Roster',
+    message:`Clear all ${ROSTER.length} models from the roster?\n\nMachines, teams, settings, and presets are kept.\nThis cannot be undone.`,
+    confirmLabel:'Clear roster',
+    danger:true,
+  });
+  if(!ok)return;
   ROSTER.length=0;
   TIMELINE.length=0;
   TEAMS.forEach(t=>t.members=[]);
@@ -33,9 +119,21 @@ function clearRoster(){
   toast(`Roster cleared. Machines and settings untouched.`);
 }
 
-function wipeAllData(){
-  if(!confirm('⚠️ WIPE ALL DATA?\n\nThis will permanently delete:\n• Every model on the roster\n• All teams, scores, and session history\n• All episodes and presets\n• All machines\n\nThe app will reload to a completely blank state.\nThis cannot be undone. Continue?'))return;
-  if(!confirm('Last chance — are you absolutely sure?\n\nClick OK to wipe everything now.'))return;
+async function wipeAllData(){
+  const firstOk=await openAppDialog({
+    title:'Wipe All Data',
+    message:'This will permanently delete:\n• Every model on the roster\n• All teams, scores, and session history\n• All episodes and presets\n• All machines\n\nThe app will reload to a completely blank state.\nThis cannot be undone.',
+    confirmLabel:'Continue',
+    danger:true,
+  });
+  if(!firstOk)return;
+  const finalOk=await openAppDialog({
+    title:'Final Confirmation',
+    message:'Last chance — are you absolutely sure?\n\nConfirm to wipe everything now.',
+    confirmLabel:'Wipe everything',
+    danger:true,
+  });
+  if(!finalOk)return;
   // Write empty/zero values so the app reloads into the same blank state as first launch.
   localStorage.setItem('lmmp_v5_roster',   JSON.stringify([]));
   localStorage.setItem('lmmp_v5_teams',    JSON.stringify([]));
@@ -57,9 +155,15 @@ function wipeAllData(){
 }
 
 /* ── V6: DELETE MODEL ── */
-function deleteModel(rid){
+async function deleteModel(rid){
   const r=ROSTER.find(x=>x.id===rid);if(!r)return;
-  if(!confirm(`Remove ${dispName(r)} from the roster? All their stats will be lost.`))return;
+  const ok=await openAppDialog({
+    title:'Remove Model',
+    message:`Remove ${dispName(r)} from the roster?\n\nAll their stats will be lost.`,
+    confirmLabel:'Remove',
+    danger:true,
+  });
+  if(!ok)return;
   // remove from teams
   TEAMS.forEach(t=>{t.members=t.members.filter(m=>m!==rid);});
   ROSTER.splice(ROSTER.findIndex(x=>x.id===rid),1);

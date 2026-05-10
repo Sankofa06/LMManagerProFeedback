@@ -50,10 +50,19 @@ function usePreset(id){
 function deletePreset(id){
   PRESETS=PRESETS.filter(p=>p.id!==id);save();renderPresetChips();renderPresetModalList();
 }
-function savePresetFromInput(){
+async function savePresetFromInput(){
   const inp=document.getElementById('run-prompt');const text=inp?.value.trim();
   if(!text){toast('Type something first',true);return;}
-  const name=prompt('Preset name:','New preset');if(!name)return;
+  const name=await openAppDialog({
+    mode:'prompt',
+    title:'Save Preset',
+    message:'Name this saved prompt so it is easy to find later.',
+    confirmLabel:'Save preset',
+    placeholder:'New preset',
+    initialValue:'New preset',
+    validate:value=>value?'':'Preset name is required',
+  });
+  if(!name)return;
   PRESETS.push({id:'p'+Date.now(),name:name.slice(0,80),text});save();renderPresetChips();toast('Preset saved ✓');
 }
 function openPresetModal(){
@@ -334,7 +343,13 @@ function copyToClipboard(tid){
     fallbackCopy(txt,doToast);
   }
 }
-function clearTimeline(){
-  if(!confirm(`Clear all ${TIMELINE.length} timeline entries? This won't affect model stats.`))return;
+async function clearTimeline(){
+  const ok=await openAppDialog({
+    title:'Clear Timeline',
+    message:`Clear all ${TIMELINE.length} timeline entries?\n\nThis won't affect model stats.`,
+    confirmLabel:'Clear timeline',
+    danger:true,
+  });
+  if(!ok)return;
   TIMELINE=[];save();renderTimeline();toast('Timeline cleared');
 }

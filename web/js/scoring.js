@@ -393,9 +393,15 @@ function updateScoreSheetAvg(){
   }
 }
 
-function resetScoreSheet(){
+async function resetScoreSheet(){
   if(!scoreSheetCtx.rid||!scoreSheetCtx.logId)return;
-  if(!confirm('Reset all criteria for this response to unscored?'))return;
+  const ok=await openAppDialog({
+    title:'Reset Score Sheet',
+    message:'Reset all criteria for this response to unscored?',
+    confirmLabel:'Reset scores',
+    danger:true,
+  });
+  if(!ok)return;
   const r=ROSTER.find(x=>x.id===scoreSheetCtx.rid);if(!r)return;
   const sess=r.sessions?.find(s=>s.logId===scoreSheetCtx.logId);if(!sess)return;
   sess.scores={};
@@ -456,10 +462,16 @@ function renameCriterion(id){
   toast('Criterion renamed ✓');
 }
 
-function removeCriterion(id){
+async function removeCriterion(id){
   if(CRITERIA.length<=1){toast('At least one criterion required',true);return;}
   const c=CRITERIA.find(x=>x.id===id);if(!c)return;
-  if(!confirm(`Remove criterion "${c.name}"? Scores already given for this criterion will remain stored but become invisible.`))return;
+  const ok=await openAppDialog({
+    title:'Remove Criterion',
+    message:`Remove criterion "${c.name}"?\n\nScores already given for this criterion will remain stored but become invisible.`,
+    confirmLabel:'Remove criterion',
+    danger:true,
+  });
+  if(!ok)return;
   CRITERIA=CRITERIA.filter(x=>x.id!==id);
   saveCriteria();renderCriteriaList();
   toast('Criterion removed');
@@ -501,4 +513,3 @@ function renderRosterEvalCard(rid){
     </div>
   `;
 }
-

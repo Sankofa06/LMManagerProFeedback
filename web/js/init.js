@@ -3,7 +3,6 @@ applyTheme();
 initHttpsBanner();
 updateNodesSub();
 renderMachines();
-checkAllMachines();
 updateEpBadge();
 renderPresetChips();
 updateSessionTracker();
@@ -24,3 +23,6 @@ loadBrandName();
   const cb=document.getElementById('gs-crosstalk');
   if(btn&&cb){btn.textContent='👁 Context '+(cb.checked?'ON':'OFF');btn.style.color=cb.checked?'var(--accent)':'var(--tx3)';}
 })();
+
+if(APP.autoCheckMachines&&MACHINES.length)checkAllMachines();
+else postCheckPrompt();
