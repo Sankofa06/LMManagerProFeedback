@@ -26,3 +26,4 @@ loadBrandName();
 
 if(APP.autoCheckMachines&&MACHINES.length)checkAllMachines();
 else postCheckPrompt();
+setTimeout(showStorageWarnings,0);

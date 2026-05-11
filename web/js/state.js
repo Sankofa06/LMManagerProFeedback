@@ -1,9 +1,9 @@
 /* ── STATE ── */
-let ROSTER=JSON.parse(localStorage.getItem('lmmp_v5_roster')||'null')||DEFAULT_ROSTER;
-let TEAMS=JSON.parse(localStorage.getItem('lmmp_v5_teams')||'null')||DEFAULT_TEAMS;
-let PRESETS=JSON.parse(localStorage.getItem('lmmp_v5_presets')||'null')||[];
-let TIMELINE=JSON.parse(localStorage.getItem('lmmp_v5_timeline')||'null')||[];
-let state={nav:'machines',selRoster:null,selTeam:null,runTeam:null,epCount:parseInt(localStorage.getItem('lmmp_v5_ep')||'0'),theme:localStorage.getItem('lmmp_v5_theme')||'dark',compareMode:false,sessionTracker:{runs:0,tokens:0,timeMs:0,peakVram:0},boardSort:'score',archetypeFilter:null,familyFilter:null,selEpisode:null,archivedChats:JSON.parse(localStorage.getItem('lmmp_v7_archived')||'[]'),collapsedMachines:new Set(),setupBannerDismissed:false};
+let ROSTER=loadJson('lmmp_v5_roster', DEFAULT_ROSTER);
+let TEAMS=loadJson('lmmp_v5_teams', DEFAULT_TEAMS);
+let PRESETS=loadJson('lmmp_v5_presets', []);
+let TIMELINE=loadJson('lmmp_v5_timeline', []);
+let state={nav:'machines',selRoster:null,selTeam:null,runTeam:null,epCount:parseInt(localStorage.getItem('lmmp_v5_ep')||'0'),theme:localStorage.getItem('lmmp_v5_theme')||'dark',compareMode:false,sessionTracker:{runs:0,tokens:0,timeMs:0,peakVram:0},boardSort:'score',archetypeFilter:null,familyFilter:null,selEpisode:null,archivedChats:loadJson('lmmp_v7_archived', []),collapsedMachines:new Set(),setupBannerDismissed:false};
 ROSTER.forEach(r=>{
   if(r.totalScore===undefined)r.totalScore=0;
   if(r.episodes===undefined)r.episodes=0;

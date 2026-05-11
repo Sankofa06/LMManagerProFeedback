@@ -89,10 +89,10 @@ async function streamV1Chat(mcUrl, model, messages, opts={}, callbacks={}){
   if(reasoning&&reasoning!=='auto')body.reasoning=reasoning;
   if(contextLength)body.context_length=contextLength;
 
-  let resp=await fetch(`${mcUrl}/api/v1/chat`,{
+  let resp=await lmStudioFetch(`${mcUrl}/api/v1/chat`,{
     method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(body), signal:AbortSignal.timeout(180000)
-  });
+    body:JSON.stringify(body)
+  },{timeoutSec:APP.requestTimeoutSec||180,signal:opts.signal});
 
   // If v1 endpoint rejects, fall back to OpenAI-compat /v1/chat/completions
   if(!resp.ok){
@@ -256,8 +256,8 @@ const DEFAULT_CRITERIA=[
   {id:'cr4',name:'Reasoning'},
   {id:'cr5',name:'Crisp'},
 ];
-let CRITERIA=JSON.parse(localStorage.getItem('lmmp_v5_criteria')||'null')||DEFAULT_CRITERIA;
-function saveCriteria(){localStorage.setItem('lmmp_v5_criteria',JSON.stringify(CRITERIA));}
+let CRITERIA=loadJson('lmmp_v5_criteria', DEFAULT_CRITERIA);
+function saveCriteria(){saveJson('lmmp_v5_criteria',CRITERIA);}
 
-function save(){localStorage.setItem('lmmp_v5_roster',JSON.stringify(ROSTER));localStorage.setItem('lmmp_v5_teams',JSON.stringify(TEAMS));localStorage.setItem('lmmp_v5_ep',String(state.epCount));localStorage.setItem('lmmp_v5_presets',JSON.stringify(PRESETS));localStorage.setItem('lmmp_v5_timeline',JSON.stringify(TIMELINE.slice(-500)));localStorage.setItem('lmmp_v7_archived',JSON.stringify((state.archivedChats||[]).slice(-50)));saveMachines();}
+function save(){saveJson('lmmp_v5_roster',ROSTER);saveJson('lmmp_v5_teams',TEAMS);localStorage.setItem('lmmp_v5_ep',String(state.epCount));saveJson('lmmp_v5_presets',PRESETS);saveJson('lmmp_v5_timeline',TIMELINE.slice(-500));saveJson('lmmp_v7_archived',(state.archivedChats||[]).slice(-50));saveMachines();}
 function saveInterviewPrompt(text){interviewPrompt=text;localStorage.setItem('lmmp_v5_iv_prompt',text);}

@@ -554,3 +554,310 @@ textarea:focus-visible {
     width: 100% !important;
   }
 }
+
+/* ── Pro Console readability pass ── */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--blue) 72%, #fff);
+  outline-offset: 2px;
+}
+
+.section-bar {
+  min-height: 42px;
+  background: color-mix(in srgb, var(--bg1) 96%, var(--blue) 4%);
+}
+
+.section-title {
+  font-size: 12px;
+  letter-spacing: .01em;
+}
+
+.section-sub,
+.team-sub-t,
+.r-role,
+.mc-loaded,
+.rt-th,
+.tl-entry-meta {
+  color: color-mix(in srgb, var(--tx3) 82%, var(--tx2));
+}
+
+.rt-row,
+.roster-row,
+.team-row,
+.ep-row,
+.tl-entry {
+  transition: background .15s, border-color .15s, transform .15s;
+}
+
+.rt-row:hover,
+.roster-row:hover,
+.team-row:hover,
+.ep-row:hover {
+  background: color-mix(in srgb, var(--bg3) 76%, var(--blue) 4%);
+}
+
+.rt-thead {
+  background: color-mix(in srgb, var(--bg1) 93%, var(--blue) 7%);
+  box-shadow: 0 1px 0 var(--line);
+}
+
+.rt-row {
+  min-height: 46px;
+}
+
+.rt-actions-cell .load-btn,
+.rt-actions-cell .unload-btn,
+.load-btn,
+.unload-btn {
+  min-width: 64px;
+}
+
+.inp,
+.search-inp,
+.prompt-edit-area {
+  background: color-mix(in srgb, var(--bg) 88%, var(--bg2));
+}
+
+.btn,
+.nav-btn,
+.bn-btn,
+.chip,
+.rs-sort-btn,
+.view-toggle button,
+.mode-pill button,
+.audience-toggle button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active,
+.bn-btn:active,
+.nav-btn:active {
+  transform: translateY(1px);
+}
+
+.md-body {
+  line-height: 1.62;
+}
+
+.md-body p + p,
+.md-body ul + p,
+.md-body ol + p,
+.md-body pre + p {
+  margin-top: .7em;
+}
+
+/* ── Two-row iPhone navigation and compact mobile shell ── */
+@media (max-width: 600px) {
+  :root,
+  [data-theme="dark"],
+  [data-theme="light"] {
+    --topbar-h: 46px;
+  }
+
+  #app {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+
+  #topbar {
+    min-height: 46px;
+    height: 46px;
+    padding: 0 8px;
+  }
+
+  #live-status {
+    justify-content: flex-start !important;
+    overflow-x: auto;
+    mask-image: linear-gradient(90deg, #000 calc(100% - 18px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 18px), transparent);
+  }
+
+  .ls-pill {
+    min-width: 96px;
+    max-width: 142px;
+    padding: 4px 8px;
+  }
+
+  #topbar-row2 {
+    height: 30px;
+    justify-content: flex-start;
+    padding: 0 8px;
+  }
+
+  #topbar-row2 .tracker-pill {
+    padding: 3px 7px;
+  }
+
+  #bottomnav {
+    height: calc(88px + env(safe-area-inset-bottom));
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: stretch;
+    gap: 0;
+    padding: 4px 0 env(safe-area-inset-bottom);
+    border-top-color: color-mix(in srgb, var(--line2) 75%, var(--blue));
+    box-shadow: 0 -12px 28px rgba(0, 0, 0, .24);
+  }
+
+  .bn-btn {
+    flex: 0 0 25%;
+    height: 40px;
+    min-width: 0;
+    padding: 4px 2px;
+    gap: 2px;
+    font-size: 18px;
+    border-top: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+  }
+
+  .bn-btn span {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 9px;
+    letter-spacing: 0;
+  }
+
+  .bn-btn.active {
+    border-top-color: transparent;
+    border-bottom-color: var(--accent);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 14%, transparent), transparent);
+  }
+
+  .section-bar {
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .section-actions {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 1px;
+  }
+
+  .section-actions::-webkit-scrollbar,
+  #chat-util-strip::-webkit-scrollbar,
+  #turn-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .section-actions .btn,
+  .section-actions .inp,
+  .section-actions .search-inp {
+    flex-shrink: 0;
+  }
+
+  .rt-thead {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  .rt-row {
+    min-height: 52px;
+  }
+
+  .rt-name,
+  .r-name,
+  .team-name-t,
+  .ep-row-name {
+    line-height: 1.25;
+  }
+
+  #chat-topbar,
+  .solo-bar,
+  #turn-order-bar,
+  .tl-bar {
+    border-bottom-color: var(--line);
+  }
+
+  #chat-topbar {
+    flex-wrap: wrap;
+  }
+
+  #chat-topbar #run-team-select {
+    flex-basis: 100%;
+  }
+
+  .audience-toggle,
+  .mode-pill {
+    flex: 1 1 auto;
+  }
+
+  #turn-chips {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .chat-input-bar {
+    padding-bottom: calc(4px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--bg1) 96%, transparent);
+  }
+
+  .chat-input-inner {
+    border-radius: 10px;
+    padding: 9px 10px 9px 12px;
+    margin: 7px 8px 8px;
+  }
+
+  .chat-btns {
+    gap: 6px;
+  }
+
+  #run-btn,
+  #stop-btn {
+    min-height: 38px;
+  }
+
+  #run-log,
+  #solo-log {
+    padding-bottom: 12px;
+  }
+
+  .b-body,
+  .solo-msg .s-bubble {
+    max-width: 92%;
+  }
+
+  .b-bubble,
+  .solo-msg .s-bubble,
+  .iv-bubble {
+    font-size: 14px;
+    line-height: 1.58;
+  }
+
+  .modal-card,
+  .preset-modal-card,
+  .score-sheet-card,
+  #machine-modal > div,
+  #new-models-modal > div,
+  #iv-prompt-modal > div,
+  #https-help-modal > div {
+    width: calc(100vw - 18px) !important;
+    max-height: calc(100dvh - 28px) !important;
+    border-radius: 10px !important;
+  }
+
+  .sp-body {
+    padding-bottom: 108px;
+  }
+}
+
+@media (max-width: 380px) {
+  .bn-btn span {
+    font-size: 8px;
+  }
+
+  .bn-btn {
+    font-size: 17px;
+  }
+
+  .section-title {
+    flex-basis: 100%;
+  }
+}

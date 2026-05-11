@@ -1,5 +1,5 @@
 /* ── GROUP CHAT STATE ── */
-const chat={mode:'auto',history:[],turnQueue:[],currentTurn:0,round:0,isRunning:false,stopRequested:false};
+const chat={mode:'auto',history:[],turnQueue:[],currentTurn:0,round:0,isRunning:false,stopRequested:false,currentAbort:null};
 
 /* ── NAV ── */
 function setNav(id){
@@ -231,13 +231,13 @@ async function loadModel(rid){
   if(!mc||mc.status!=='online'){toast('Machine offline',true);return;}
   setRowLoading(rid,true);toast(`Loading ${dispId(r)} ${r.first}…`);
   if(mc.loadedInstanceId){
-    try{await fetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({instance_id:mc.loadedInstanceId}),signal:AbortSignal.timeout(15000)});}catch{}
+    try{await lmStudioFetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({instance_id:mc.loadedInstanceId})},{timeoutSec:15});}catch{}
     const prev=ROSTER.find(x=>x.model===mc.loadedModel&&x.machine===r.machine);
     mc.loadedModel=null;mc.loadedInstanceId=null;
     if(prev)updateRowLoadedState(prev.id,false,mc);
   }
   try{
-    const resp=await fetch(`${mc.url}/api/v1/models/load`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:r.model}),signal:AbortSignal.timeout(120000)});
+    const resp=await lmStudioFetch(`${mc.url}/api/v1/models/load`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:r.model})},{timeoutSec:120});
     if(!resp.ok){const e=await resp.text();throw new Error(e.slice(0,150));}
     const data=await resp.json();
     mc.loadedModel=r.model;mc.loadedInstanceId=data.instance_id||r.model;
@@ -252,7 +252,7 @@ async function unloadModel(rid){
   const mc=MACHINES.find(x=>x.id===r.machine);if(!mc)return;
   setRowLoading(rid,true);
   try{
-    const resp=await fetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({instance_id:mc.loadedInstanceId||r.model}),signal:AbortSignal.timeout(15000)});
+    const resp=await lmStudioFetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({instance_id:mc.loadedInstanceId||r.model})},{timeoutSec:15});
     if(!resp.ok){const e=await resp.text();throw new Error(e.slice(0,150));}
     mc.loadedModel=null;mc.loadedInstanceId=null;
     updateRowLoadedState(rid,false,mc);
@@ -290,7 +290,7 @@ async function checkMachine(id, silent=false){
   m.url=m.url.replace(/\/+$/,'');
   m.status='checking';updateDots(id,'checking');setMachineActivity(id,'idle');
   try{
-    const r=await fetch(`${m.url}/api/v1/models`,{signal:AbortSignal.timeout(4000)});
+    const r=await lmStudioFetch(`${m.url}/api/v1/models`,{},{timeoutSec:4});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const data=await r.json();m.status='online';updateDots(id,'online');renderLiveStatus();
     const models=data.models||data.data||[];

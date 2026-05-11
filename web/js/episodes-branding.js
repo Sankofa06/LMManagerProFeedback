@@ -172,8 +172,8 @@ function saveMachineEdit(id){
 // MACHINE_ICONS replaced by MACHINE_EMOJIS in emoji picker above
 
 /* ── V7: EPISODES DATA & UI ── */
-let EPISODES=JSON.parse(localStorage.getItem('lmmp_v7_episodes')||'null')||[];
-function saveEpisodes(){localStorage.setItem('lmmp_v7_episodes',JSON.stringify(EPISODES.slice(-100)));}
+let EPISODES=loadJson('lmmp_v7_episodes', []);
+function saveEpisodes(){saveJson('lmmp_v7_episodes',EPISODES.slice(-100));}
 
 const TASK_TYPES=[
   {id:'prompt',icon:'💬',label:'Prompt',color:'var(--blue)',desc:'Send a specific prompt to the team or individual models'},

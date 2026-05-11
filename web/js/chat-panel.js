@@ -217,12 +217,11 @@ async function streamChatCompletions(mcUrl, model, messages, opts={}, callbacks=
   // OpenAI compat: system goes in messages array as-is, no type field needed
   const apiMessages=messages.map(m=>({role:m.role, content:m.content||''}));
 
-  const resp=await fetch(`${mcUrl}/v1/chat/completions`,{
+  const resp=await lmStudioFetch(`${mcUrl}/v1/chat/completions`,{
     method:'POST', headers:{'Content-Type':'application/json'},
     body:JSON.stringify({model, messages:apiMessages, temperature, max_tokens:maxTokens,
-      stream:true, stream_options:{include_usage:true}}),
-    signal:AbortSignal.timeout(getTimeout())
-  });
+      stream:true, stream_options:{include_usage:true}})
+  },{timeoutMs:getTimeout(),signal:opts.signal});
   if(!resp.ok){const e=await resp.text().catch(()=>'');throw new Error(`HTTP ${resp.status}: ${e.slice(0,200)}`);}
 
   onPhase?.('generating', 0);
@@ -283,7 +282,7 @@ async function runAutoRound(){
   save();renderSurvivorIf();
 }
 
-function stopChat(){chat.stopRequested=true;document.getElementById('run-status-text').textContent='Stopping…';}
+function stopChat(){chat.stopRequested=true;if(chat.currentAbort)chat.currentAbort.abort();document.getElementById('run-status-text').textContent='Stopping…';}
 
 async function fireAgent(r){
   const mc=MACHINES.find(x=>x.id===r.machine);
@@ -308,9 +307,10 @@ async function fireAgent(r){
   let text='', reasoning='', ttft=null, inputTokens=0, outputTokens=0, reasoningTokens=0;
   let result=null; // v8.5: hoist out of try{} so post-stream code can read result.tps/endpoint
   try{
+    chat.currentAbort=new AbortController();
     result=await streamV1Chat(mc.url, r.model, messages,
       {temperature:r.temp??APP.defaultTemp??0.5, maxTokens:s.maxTokens,
-       reasoning:APP.thinkingEnabled?'on':null},
+       reasoning:APP.thinkingEnabled?'on':null, signal:chat.currentAbort.signal},
       {
         onPhase(phase, progress){
           if(phase==='loading'){
@@ -340,12 +340,13 @@ async function fireAgent(r){
     mc.loadedModel=r.model; // loadedInstanceId managed by checkMachine/loadModel only
     updateRowLoadedState(r.id,true,mc);
     const lel=document.getElementById('mc-loaded-'+mc.id);if(lel)lel.textContent='⬤ '+r.model;
-  }catch(e){updateLogEntry(logId,'error','Error: '+e.message);highlightChip(r.id,false);setMachineActivity(mc.id,'idle');return;}
+  }catch(e){updateLogEntry(logId,'error','Error: '+e.message);highlightChip(r.id,false);setMachineActivity(mc.id,'idle');chat.currentAbort=null;return;}
+  chat.currentAbort=null;
 
   // v8.5: restore post-generation unload (was in v8_3, removed in v8_4)
   try{
-    await fetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({instance_id:mc.loadedInstanceId||r.model}),signal:AbortSignal.timeout(15000)});
+    await lmStudioFetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({instance_id:mc.loadedInstanceId||r.model})},{timeoutSec:15});
     mc.loadedModel=null;mc.loadedInstanceId=null;
     updateRowLoadedState(r.id,false,mc);
     const _lel=document.getElementById('mc-loaded-'+mc.id);if(_lel)_lel.textContent='No model loaded';

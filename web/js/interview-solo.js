@@ -135,9 +135,10 @@ async function sendInterview(rid, overrideText){
   let text2='', reasoning2='', ttft=null, realComp=0, realPrompt=0, thinkTokens=0;
   let result=null; // v8.5: hoist out of try{} so post-stream code can read result.tps
   try{
+    chat.currentAbort=new AbortController();
     result=await streamV1Chat(mc.url, r.model, apiMessages,
       {temperature:r.temp??APP.defaultTemp??0.5, maxTokens:s.maxTokens,
-       reasoning:APP.thinkingEnabled?'on':null},
+       reasoning:APP.thinkingEnabled?'on':null, signal:chat.currentAbort.signal},
       {
         onPhase(phase){
           if(phase==='loading')badge&&(badge.textContent='loading…');
@@ -158,11 +159,12 @@ async function sendInterview(rid, overrideText){
     const sb=document.getElementById(bubbleId);
     if(sb){ const bbl=sb.querySelector('.iv-bubble'); if(bbl) bbl.textContent='Error: '+e.message; }
   }
+  chat.currentAbort=null;
 
   // v8.5: restore post-generation unload
   try{
-    await fetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({instance_id:mc.loadedInstanceId||r.model}),signal:AbortSignal.timeout(15000)});
+    await lmStudioFetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({instance_id:mc.loadedInstanceId||r.model})},{timeoutSec:15});
     mc.loadedModel=null;mc.loadedInstanceId=null;
     updateRowLoadedState(r.id,false,mc);
     const _lel=document.getElementById('mc-loaded-'+mc.id);if(_lel)_lel.textContent='No model loaded';
@@ -257,9 +259,7 @@ function clearInterview(rid){
  *   - state.sessionTracker  (no session counter pollution)
  * Persists per-model history under lmmp_v82_oneonone so conversations survive refresh.
  */
-const ONEONONE = (function(){
-  try{ return JSON.parse(localStorage.getItem('lmmp_v82_oneonone')||'{}'); }catch{ return {}; }
-})();
+const ONEONONE = loadJson('lmmp_v82_oneonone', {});
 const oneononeRunning = {}; // rid → bool (in-flight)
 const soloState = {
   audience: 'group',  // 'group' | 'solo'
@@ -267,7 +267,7 @@ const soloState = {
   modelId: null       // selected rid in solo mode
 };
 
-function saveOneonone(){ try{ localStorage.setItem('lmmp_v82_oneonone', JSON.stringify(ONEONONE)); }catch{} }
+function saveOneonone(){ saveJson('lmmp_v82_oneonone', ONEONONE); }
 
 // switch between Group chat and 1:1 Solo
 function setAudience(mode){
@@ -459,9 +459,10 @@ async function sendSoloMessage(){
   let text2='', reasoning2='', ttft=null, realComp=0, realPrompt=0, thinkTokens=0;
   let result=null; // v8.5: hoist out of try{} so post-stream code can read result.tps
   try{
+    chat.currentAbort=new AbortController();
     result=await streamV1Chat(mc.url, r.model, apiMessages,
       {temperature:r.temp??APP.defaultTemp??0.5, maxTokens:s.maxTokens,
-       reasoning:APP.thinkingEnabled?'on':null},
+       reasoning:APP.thinkingEnabled?'on':null, signal:chat.currentAbort.signal},
       {
         onPhase(phase,progress){
           if(statusEl){
@@ -485,11 +486,12 @@ async function sendSoloMessage(){
     const sb=document.getElementById(bubbleId);
     if(sb){ const bbl=sb.querySelector('.s-bubble'); if(bbl) bbl.textContent='Error: '+e.message; }
   }
+  chat.currentAbort=null;
 
   // v8.6: add missing unload (solo chat was skipped in v8.5 restore)
   try{
-    await fetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({instance_id:mc.loadedInstanceId||r.model}),signal:AbortSignal.timeout(15000)});
+    await lmStudioFetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({instance_id:mc.loadedInstanceId||r.model})},{timeoutSec:15});
     mc.loadedModel=null;mc.loadedInstanceId=null;
     updateRowLoadedState(r.id,false,mc);
     const _lel=document.getElementById('mc-loaded-'+mc.id);if(_lel)_lel.textContent='No model loaded';

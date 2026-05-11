@@ -163,9 +163,10 @@ async function fireAgentInColumn(r,colId){
   let text='',reasoning='',ttft=null,realCompletionTokens=0,realPromptTokens=0,thinkTokens=0;
   let result=null; // v8.5: hoist out of try{} so post-stream code can read result.tps
   try{
+    chat.currentAbort=new AbortController();
     result=await streamV1Chat(mc.url, r.model, messages,
       {temperature:r.temp??APP.defaultTemp??0.5, maxTokens:s.maxTokens,
-       reasoning:APP.thinkingEnabled?'on':null},
+       reasoning:APP.thinkingEnabled?'on':null, signal:chat.currentAbort.signal},
       {
         onPhase(phase,progress){
           if(phase==='loading'){if(metaEl)metaEl.textContent=`loading${progress<1?' '+Math.round(progress*100)+'%':'…'}`;}
@@ -183,12 +184,13 @@ async function fireAgentInColumn(r,colId){
     ttft=result.ttft;realCompletionTokens=result.outputTokens;realPromptTokens=result.inputTokens;thinkTokens=result.reasoningTokens;
     mc.loadedModel=r.model; // loadedInstanceId managed by checkMachine/loadModel only
     updateRowLoadedState(r.id,true,mc);
-  }catch(e){if(bodyEl){bodyEl.classList.remove('thinking');bodyEl.textContent='Error: '+e.message;}return;}
+  }catch(e){if(bodyEl){bodyEl.classList.remove('thinking');bodyEl.textContent='Error: '+e.message;}chat.currentAbort=null;return;}
+  chat.currentAbort=null;
 
   // v8.5: restore post-generation unload
   try{
-    await fetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({instance_id:mc.loadedInstanceId||r.model}),signal:AbortSignal.timeout(15000)});
+    await lmStudioFetch(`${mc.url}/api/v1/models/unload`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({instance_id:mc.loadedInstanceId||r.model})},{timeoutSec:15});
     mc.loadedModel=null;mc.loadedInstanceId=null;
     updateRowLoadedState(r.id,false,mc);
     const _lel=document.getElementById('mc-loaded-'+mc.id);if(_lel)_lel.textContent='No model loaded';

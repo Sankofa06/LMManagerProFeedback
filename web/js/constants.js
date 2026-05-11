@@ -1,4 +1,89 @@
 /* ── EMOJI SETS ── */
+const STORAGE_WARNINGS=[];
+
+function safeParseJson(raw, fallback, key='value'){
+  if(raw==null||raw==='')return cloneFallback(fallback);
+  try{
+    const parsed=JSON.parse(raw);
+    return parsed==null?cloneFallback(fallback):parsed;
+  }catch(e){
+    STORAGE_WARNINGS.push(key);
+    console.warn(`[LMMP Web] Ignoring corrupt localStorage value for ${key}:`, e);
+    return cloneFallback(fallback);
+  }
+}
+
+function cloneFallback(fallback){
+  if(fallback&&typeof fallback==='object'){
+    try{return JSON.parse(JSON.stringify(fallback));}
+    catch{
+      if(Array.isArray(fallback))return fallback.map(x=>typeof x==='object'&&x?{...x}:x);
+      return {...fallback};
+    }
+  }
+  return fallback;
+}
+
+function loadJson(key, fallback){
+  return safeParseJson(localStorage.getItem(key), fallback, key);
+}
+
+function saveJson(key, value){
+  try{localStorage.setItem(key, JSON.stringify(value));return true;}
+  catch(e){console.warn(`[LMMP Web] Could not save ${key}:`, e);return false;}
+}
+
+function mergedSettings(saved, defaults){
+  return {...cloneFallback(defaults), ...(saved&&typeof saved==='object'?saved:{})};
+}
+
+function showStorageWarnings(){
+  if(!STORAGE_WARNINGS.length)return;
+  const keys=[...new Set(STORAGE_WARNINGS)];
+  const msg=`Recovered from corrupt saved data: ${keys.slice(0,3).join(', ')}${keys.length>3?'…':''}`;
+  if(typeof toast==='function')toast(msg,true);
+}
+
+function timeoutSignal(ms){
+  if(window.AbortSignal?.timeout)return AbortSignal.timeout(ms);
+  const c=new AbortController();
+  setTimeout(()=>c.abort(new DOMException('Request timed out','TimeoutError')),ms);
+  return c.signal;
+}
+
+function mergeSignals(signals){
+  const active=signals.filter(Boolean);
+  if(!active.length)return undefined;
+  if(active.length===1)return active[0];
+  const controller=new AbortController();
+  const abort=signal=>{if(!controller.signal.aborted)controller.abort(signal.reason||new DOMException('Request aborted','AbortError'));};
+  active.forEach(signal=>{
+    if(signal.aborted)abort(signal);
+    else signal.addEventListener('abort',()=>abort(signal),{once:true});
+  });
+  return controller.signal;
+}
+
+async function lmStudioFetch(url, options={}, config={}){
+  const timeoutMs=config.timeoutMs??((config.timeoutSec??APP?.requestTimeoutSec??180)*1000);
+  const signal=mergeSignals([options.signal, config.signal, timeoutSignal(timeoutMs)]);
+  try{
+    return await fetch(url,{...options,signal});
+  }catch(e){
+    const name=e?.name||'NetworkError';
+    const isTimeout=name==='TimeoutError';
+    const isAbort=name==='AbortError';
+    const message=isTimeout
+      ?`Request timed out after ${Math.round(timeoutMs/1000)}s`
+      :isAbort
+        ?'Request stopped'
+        :`Network request failed: ${e.message||name}`;
+    const err=new Error(message);
+    err.cause=e;err.name=isAbort?'AbortError':isTimeout?'TimeoutError':'NetworkError';
+    throw err;
+  }
+}
+
 const MACHINE_EMOJIS=[
   // Computers & hardware
   '🖥','💻','🖱','⌨','🖨','📱','⌚','📺',
@@ -156,12 +241,12 @@ const DEFAULT_APP_SETTINGS={
   // Roster
   defaultMachine:'',
 };
-let APP=JSON.parse(localStorage.getItem('lmmp_app_settings')||'null')||{...DEFAULT_APP_SETTINGS};
-function saveApp(){localStorage.setItem('lmmp_app_settings',JSON.stringify(APP));}
+let APP=mergedSettings(loadJson('lmmp_app_settings', {}), DEFAULT_APP_SETTINGS);
+function saveApp(){saveJson('lmmp_app_settings',APP);}
 
 // Custom roles: [{id, profId, specId, promptLine}]
-let CUSTOM_ROLES=JSON.parse(localStorage.getItem('lmmp_custom_roles')||'[]');
-function saveCustomRoles(){localStorage.setItem('lmmp_custom_roles',JSON.stringify(CUSTOM_ROLES));}
+let CUSTOM_ROLES=loadJson('lmmp_custom_roles', []);
+function saveCustomRoles(){saveJson('lmmp_custom_roles',CUSTOM_ROLES);}
 
 // ── COLOR SYSTEM ──
 // Unhired → always neutral (#94a3b8 light / #475569 dark)
