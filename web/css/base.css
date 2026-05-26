@@ -31,6 +31,7 @@ input, select, textarea { font-family: inherit; }
   display: flex; align-items: center; justify-content: center;
 }
 .brand-mark svg { width: 14px; height: 14px; }
+.brand-mark.brand-icon { object-fit: cover; padding: 0; }
 .brand-name { font-size: 14px; font-weight: 700; letter-spacing: -.03em; color: var(--tx1); }
 .brand-tag { font-size: 11px; color: var(--tx3); font-family: var(--mono); }
 .topbar-spacer { flex: 1; }
@@ -185,4 +186,3 @@ input, select, textarea { font-family: inherit; }
 }
 .inp:focus { border-color: var(--blue); }
 .inp::placeholder { color: var(--tx4); }
-

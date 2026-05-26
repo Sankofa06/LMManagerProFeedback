@@ -35,6 +35,20 @@ jobs:
               {
                 owner: "Sankofa06",
                 repo: "LMManagerProFeedback",
+                name: "bug",
+                color: "d73a4a",
+                description: "Something is not working as expected.",
+              },
+              {
+                owner: "Sankofa06",
+                repo: "LMManagerProFeedback",
+                name: "enhancement",
+                color: "a2eeef",
+                description: "New feature request or product improvement.",
+              },
+              {
+                owner: "Sankofa06",
+                repo: "LMManagerProFeedback",
                 name: "triage-private",
                 color: "0f766e",
                 description: "Copy this public issue into the private LM Manager Pro tracker.",

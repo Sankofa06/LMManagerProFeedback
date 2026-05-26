@@ -38,12 +38,13 @@ Tailscale-style VPN that gives each machine a routable name).
 ```
 web/
 ├── index.html          # markup + script/link tags
-├── css/                # 5 stylesheets, split by section
+├── css/                # 6 stylesheets, split by section
 │   ├── tokens.css
 │   ├── base.css
 │   ├── panels.css
 │   ├── responsive.css
-│   └── modals.css
+│   ├── modals.css
+│   └── refresh.css
 └── js/                 # 19 classic <script> files, loaded in order
     ├── constants.js    # emoji sets, palette, role system, app defaults
     ├── data.js         # default machines/roster/teams

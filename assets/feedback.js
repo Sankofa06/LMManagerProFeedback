@@ -3,14 +3,10 @@
 
   const GH_OWNER = "sankofa06";
   const GH_REPO = "LMManagerProFeedback";
-  // Fine-grained PAT with Issues: Read+Write on this repo only.
-  // WARNING: this token is visible in page source — use a repo-scoped token.
-  const GH_API_TOKEN = "YOUR_GITHUB_PAT_HERE";
-  const NEW_ISSUE_URL = `https://github.com/${GH_OWNER}/${GH_REPO}/issues/new/choose`;
+  const SUBMIT_ENDPOINT = document.querySelector('meta[name="feedback-submit-endpoint"]')?.content || "";
   const REPO_URL = `https://github.com/${GH_OWNER}/${GH_REPO}`;
   const CACHE_KEY = `lmmp-feedback-cache-v1`;
   const CACHE_TTL_MS = 5 * 60 * 1000;
-  const UPVOTES_KEY = `lmmp-upvoted-v1`;
 
   const REACTION_EMOJI = {
     "+1": "👍",
@@ -37,6 +33,7 @@
     issueType: document.getElementById("issue-type"),
     issueTitle: document.getElementById("issue-title"),
     issueBody: document.getElementById("issue-body"),
+    honeypot: document.getElementById("feedback-website"),
     modalCancel: document.getElementById("modal-cancel"),
     modalSubmitBtn: document.getElementById("modal-submit"),
     modalError: document.getElementById("modal-error"),
@@ -51,24 +48,7 @@
   let allIssues = [];
 
   function ghHeaders() {
-    const h = { Accept: "application/vnd.github+json" };
-    if (GH_API_TOKEN && GH_API_TOKEN !== "YOUR_GITHUB_PAT_HERE") {
-      h["Authorization"] = `Bearer ${GH_API_TOKEN}`;
-    }
-    return h;
-  }
-
-  function readUpvoted() {
-    try {
-      const raw = localStorage.getItem(UPVOTES_KEY);
-      return raw ? new Set(JSON.parse(raw)) : new Set();
-    } catch { return new Set(); }
-  }
-
-  function saveUpvoted(set) {
-    try {
-      localStorage.setItem(UPVOTES_KEY, JSON.stringify([...set]));
-    } catch { /* quota */ }
+    return { Accept: "application/vnd.github+json" };
   }
 
   if (els.repoLink) els.repoLink.href = REPO_URL;
@@ -189,8 +169,6 @@
   }
 
   function renderCard(issue) {
-    const upvoted = readUpvoted();
-    const hasVoted = upvoted.has(issue.number);
     const upvotes = (issue.reactions && issue.reactions["+1"]) || 0;
 
     const labelChips = issue.labels
@@ -237,12 +215,7 @@
           ${labelChips || `<span class="label-chip">unlabeled</span>`}
         </div>
         <div class="reaction-row">
-          <button
-            class="upvote-btn${hasVoted ? " voted" : ""}"
-            onclick="window.__lmmpUpvote(${issue.number})"
-            title="${hasVoted ? "You upvoted this" : "Upvote"}"
-            ${hasVoted ? 'aria-pressed="true"' : 'aria-pressed="false"'}
-          >👍 ${upvotes}</button>
+          <a class="upvote-btn" href="${issue.html_url}" target="_blank" rel="noopener" title="Open on GitHub to react or comment">👍 ${upvotes}</a>
           <div class="reaction-tray">${reactionStrip}</div>
         </div>
       </li>`;
@@ -276,45 +249,11 @@
     }
   }
 
-  window.__lmmpUpvote = async function (issueNumber) {
-    const upvoted = readUpvoted();
-    if (upvoted.has(issueNumber)) return;
-
-    const btn = els.list.querySelector(`button[onclick="window.__lmmpUpvote(${issueNumber})"]`);
-    if (btn) btn.disabled = true;
-
-    try {
-      const res = await fetch(
-        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/issues/${issueNumber}/reactions`,
-        {
-          method: "POST",
-          headers: { ...ghHeaders(), "Content-Type": "application/json" },
-          body: JSON.stringify({ content: "+1" }),
-        }
-      );
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-
-      upvoted.add(issueNumber);
-      saveUpvoted(upvoted);
-
-      const issue = allIssues.find((i) => i.number === issueNumber);
-      if (issue) {
-        issue.reactions = issue.reactions || {};
-        issue.reactions["+1"] = (issue.reactions["+1"] || 0) + 1;
-        writeCache(allIssues);
-      }
-      render();
-    } catch (err) {
-      if (btn) btn.disabled = false;
-      setBanner(`Couldn't upvote: ${err.message}`, true);
-      setTimeout(clearBanner, 4000);
-    }
-  };
-
   function openSubmitModal() {
     els.form.reset();
     els.modalError.hidden = true;
     els.modalSubmitBtn.disabled = false;
+    els.modalSubmitBtn.textContent = "Submit";
     els.modal.showModal();
     els.issueTitle.focus();
   }
@@ -327,10 +266,15 @@
     e.preventDefault();
 
     const title = els.issueTitle.value.trim();
-    const body = els.issueBody.value.trim();
-    const labelName = els.issueType.value;
+    const details = els.issueBody.value.trim();
+    const type = els.issueType.value;
 
     if (!title) return;
+    if (!SUBMIT_ENDPOINT) {
+      els.modalError.textContent = "Feedback intake is not configured yet.";
+      els.modalError.hidden = false;
+      return;
+    }
 
     els.modalSubmitBtn.disabled = true;
     els.modalSubmitBtn.textContent = "Submitting…";
@@ -338,16 +282,26 @@
 
     try {
       const res = await fetch(
-        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/issues`,
+        SUBMIT_ENDPOINT,
         {
           method: "POST",
-          headers: { ...ghHeaders(), "Content-Type": "application/json" },
-          body: JSON.stringify({ title, body: body || undefined, labels: [labelName] }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type,
+            title,
+            details,
+            website: els.honeypot ? els.honeypot.value : "",
+            metadata: {
+              source: "feedback-site",
+              page: window.location.href,
+              userAgent: navigator.userAgent.slice(0, 180),
+            },
+          }),
         }
       );
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || `API error: ${res.status}`);
+        throw new Error(errData.message || "Feedback could not be submitted right now.");
       }
 
       closeModal();

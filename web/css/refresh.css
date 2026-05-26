@@ -111,6 +111,12 @@ textarea:focus-visible {
   font-weight: 800;
 }
 
+.brand-mark.brand-icon {
+  display: block;
+  object-fit: cover;
+  padding: 0;
+}
+
 .brand-copy {
   display: flex;
   min-width: 0;

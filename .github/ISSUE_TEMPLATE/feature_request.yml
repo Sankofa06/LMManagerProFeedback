@@ -1,0 +1,41 @@
+name: Feature request
+description: Suggest an improvement or new capability.
+title: "[Feature Request] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing an idea for LM Manager Pro. Please avoid sharing API keys, tokens, private hostnames, or personal data.
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: What should LM Manager Pro do?
+      placeholder: Add a saved comparison preset for recurring model tests
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or workflow
+      description: What task, frustration, or repeated workflow would this improve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you want.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional workarounds or different approaches.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Screenshots, examples, or related links.

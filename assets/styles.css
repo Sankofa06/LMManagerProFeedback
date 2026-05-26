@@ -381,6 +381,14 @@ dialog textarea {
   color: var(--text);
 }
 
+.feedback-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 @media (prefers-color-scheme: dark) {
   .toolbar input[type="search"],
   .toolbar select,
@@ -576,6 +584,7 @@ dialog label {
 .upvote-btn:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
+  text-decoration: none;
 }
 
 .upvote-btn.voted {
@@ -945,7 +954,7 @@ dialog textarea:focus,
 .screenshot-strip img {
   display: block;
   width: 100%;
-  aspect-ratio: 1206 / 2622;
+  aspect-ratio: 1320 / 2868;
   object-fit: cover;
   object-position: top;
   border-radius: 20px;

@@ -4,15 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Feedback - LM Manager Pro</title>
-  <meta name="description" content="Browse, upvote, and submit feature requests and bug reports for LM Manager Pro." />
+  <meta name="description" content="Browse and submit feature requests and bug reports for LM Manager Pro." />
   <meta name="color-scheme" content="light dark" />
+  <meta name="feedback-submit-endpoint" content="https://lmmp-feedback-submit.blackslabpro.workers.dev/submit-feedback" />
   <meta property="og:title" content="LM Manager Pro Feedback" />
-  <meta property="og:description" content="Browse, upvote, and submit feature requests and bug reports for LM Manager Pro." />
+  <meta property="og:description" content="Browse and submit feature requests and bug reports for LM Manager Pro." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="assets/screenshots/machines-dark.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="LM Manager Pro Feedback" />
-  <meta name="twitter:description" content="Browse, upvote, and submit feature requests and bug reports for LM Manager Pro." />
+  <meta name="twitter:description" content="Browse and submit feature requests and bug reports for LM Manager Pro." />
   <meta name="twitter:image" content="assets/screenshots/machines-dark.png" />
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
   <link rel="stylesheet" href="assets/styles.css" />
@@ -39,8 +40,8 @@
         <span class="eyebrow">Community Queue</span>
         <h1>Ship the right fixes first.</h1>
         <p class="tagline">
-          Browse active requests, upvote what matters, and submit the missing bug
-          report or feature idea.
+          Browse active requests, see what has momentum, and submit the missing
+          bug report or feature idea without needing a GitHub account.
         </p>
         <div class="hero-actions">
           <button id="submit-btn" class="btn primary">+ Submit Feedback</button>
@@ -141,6 +142,10 @@
         <label>
           Details <span class="optional">(optional)</span>
           <textarea id="issue-body" rows="5" placeholder="Steps to reproduce, expected behaviour, etc."></textarea>
+        </label>
+        <label class="feedback-honeypot" aria-hidden="true">
+          Website
+          <input type="text" id="feedback-website" tabindex="-1" autocomplete="off" />
         </label>
         <p id="modal-error" class="modal-error" hidden></p>
         <div class="modal-actions">

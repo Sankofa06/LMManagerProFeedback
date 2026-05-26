@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Privacy Policy
+    url: https://sankofa06.github.io/LMManagerProFeedback/privacy.html
+    about: Review how LM Manager Pro handles local data and feedback.
+  - name: LM Studio Docs
+    url: https://lmstudio.ai/docs
+    about: Get help with LM Studio setup, local servers, and model behavior.

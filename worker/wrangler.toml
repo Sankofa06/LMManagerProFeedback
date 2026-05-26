@@ -1,0 +1,9 @@
+name = "lmmp-feedback-submit"
+main = "index.mjs"
+compatibility_date = "2026-05-14"
+
+[vars]
+GITHUB_OWNER = "Sankofa06"
+GITHUB_REPO = "LMManagerProFeedback"
+ALLOWED_ORIGINS = "https://sankofa06.github.io,http://localhost:8000,http://127.0.0.1:8000"
+RATE_LIMIT_SECONDS = "60"
