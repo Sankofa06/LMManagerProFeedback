@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Privacy Policy - LM Manager Pro</title>
-  <meta name="description" content="Privacy policy for LM Manager Pro. We do not collect, transmit, or share any personal data." />
+  <meta name="description" content="Privacy policy for LM Manager Pro, including local data storage, provider requests, and optional public feedback submissions." />
   <meta name="color-scheme" content="light dark" />
   <meta property="og:title" content="LM Manager Pro Privacy Policy" />
   <meta property="og:description" content="LM Manager Pro is local-first with no analytics, no telemetry, and no account system." />
@@ -45,7 +45,7 @@
         <div class="hero-badges">
           <span class="pill">No analytics</span>
           <span class="pill">No trackers</span>
-          <span class="pill">No cloud relay</span>
+          <span class="pill">Optional feedback only</span>
         </div>
       </div>
       <aside class="hero-panel policy-panel">
@@ -56,7 +56,7 @@
         <div class="summary-grid policy-summary">
           <article class="summary-card">
             <span class="summary-label">Collection</span>
-            <strong>None</strong>
+            <strong>Optional feedback</strong>
           </article>
           <article class="summary-card">
             <span class="summary-label">Storage</span>
@@ -79,9 +79,10 @@
       <p>
         LM Manager Pro is a local-first iOS and iPadOS app for managing
         LM Studio inference servers and cloud AI providers. There are no
-        accounts, no analytics, no crash reporting, and no telemetry of any
-        kind. Everything you create — machines, personas, chat history,
-        episodes, scores — stays on your device.
+        accounts, no analytics, no third-party crash reporting, and no
+        background telemetry. Everything you create — machines, personas,
+        chat history, episodes, scores — stays on your device unless you
+        deliberately submit content through the public feedback form.
       </p>
     </section>
 
@@ -137,8 +138,23 @@
             web search for a persona, the app sends the persona's search query
             to <a href="https://duckduckgo.com/privacy" target="_blank" rel="noopener">DuckDuckGo</a>.
           </li>
+          <li>
+            <strong>In-app feedback (optional):</strong> when you deliberately submit
+            feedback, the app sends the feedback type, title, details, app
+            version, build number, platform, and iOS or iPadOS version to a
+            developer-operated Cloudflare Worker. The Worker creates a
+            persistent public issue in the
+            <a href="https://github.com/Sankofa06/LMManagerProFeedback/issues" target="_blank" rel="noopener">LM Manager Pro Feedback repository</a>.
+            The form states that submissions become public and warns you not to
+            include API keys, credentials, private hostnames or IP addresses,
+            proprietary prompts, or other sensitive information.
+          </li>
         </ul>
-        <p>That is the complete list. There are no other network calls.</p>
+        <p>
+          The developer does not receive your prompts, responses, provider
+          keys, chats, generated media, or local app database through the
+          model, media, or search features.
+        </p>
       </article>
 
       <article class="surface policy-card">
@@ -155,17 +171,30 @@
         <p>
           None. The app contains no analytics SDKs, no crash reporting,
           no advertising identifiers, no third-party trackers, and no cookies.
-          Nothing is sent to us about how you use the app — because there is
-          no server.
+          The optional feedback relay is used only when you choose to submit
+          feedback; it is not analytics or tracking.
+        </p>
+      </article>
+
+      <article class="surface policy-card">
+        <h2>App privacy disclosure</h2>
+        <p>
+          Feedback text is treated as Other User Content. The attached app,
+          build, platform, and operating-system details are treated as Other
+          Diagnostic Data. This data is used for app functionality and
+          customer support, is not linked to an account or advertising profile,
+          and is not used for tracking.
         </p>
       </article>
 
       <article class="surface policy-card">
         <h2>Children's privacy</h2>
         <p>
-          LM Manager Pro is rated 4+. Because we do not collect data from
-          anyone, we do not collect data from children. If you choose to use
-          cloud AI providers, those providers' age policies apply.
+          LM Manager Pro is rated 13+ because it can connect to AI chat and
+          content-generation services. The app does not knowingly collect
+          information from children. Users should not submit personal or
+          sensitive information through public feedback. User-configured cloud
+          providers have their own age requirements and privacy policies.
         </p>
       </article>
 
@@ -197,7 +226,7 @@
       </article>
     </section>
 
-    <p class="updated">Last updated: May 4, 2026</p>
+    <p class="updated">Last updated: July 29, 2026</p>
   </main>
 
   <footer class="site-footer">
