@@ -1,16 +1,16 @@
 # LM Manager Pro — Public Website
 
 Static site for the LM Manager Pro landing page, privacy policy, and feedback page.
-The pages are pure HTML / CSS / vanilla JS with no build step. No-account
-feedback submission is handled by the small Cloudflare Worker in `worker/` so
-GitHub write credentials never ship to the browser or app.
+The pages are pure HTML / CSS / vanilla JS with no build step. Direct support
+opens a private email draft, while the public GitHub issue board remains
+available for browsing and community discussion.
 
 ## Pages
 
 | File | Purpose | Deployed URL |
 |---|---|---|
 | `index.html` | Product landing page | `https://sankofa06.github.io/LMManagerProFeedback/` |
-| `feedback.html` | Feedback page (browse + submit GitHub issues) | `https://sankofa06.github.io/LMManagerProFeedback/feedback.html` |
+| `feedback.html` | Support email and public feedback browser | `https://sankofa06.github.io/LMManagerProFeedback/feedback.html` |
 | `privacy.html` | Privacy Policy | `https://sankofa06.github.io/LMManagerProFeedback/privacy.html` |
 
 ## Current assets
@@ -84,16 +84,16 @@ LMManagerProFeedback/
 The `.github/ISSUE_TEMPLATE/` files give GitHub-native issue creation a chooser
 for bug reports or feature requests instead of a blank text box. `config.yml`
 disables blank issues and adds quick links to the privacy policy and LM Studio
-docs. The website's "Submit Feedback" modal posts directly to the Worker and
-maps the selected type to `bug` or `enhancement`.
+docs. The website's "Email Support" modal collects a type, title, and optional
+details, then opens a private draft in the visitor's email app.
 
 GitHub Pages will publish within a minute or two.
 
-### Deploy the feedback relay
+### Deploy the native app feedback relay
 
-The static site can read public GitHub issues directly, but creating issues
-requires a secret GitHub token. Deploy `worker/` to Cloudflare Workers and store
-that token as `GITHUB_TOKEN`.
+The static site does not need a write credential. The native app's optional
+public-issue submission flow uses `worker/`; deploying it requires a narrowly
+scoped GitHub token stored as `GITHUB_TOKEN`.
 
 ```bash
 cd worker
@@ -102,9 +102,8 @@ wrangler deploy
 ```
 
 Use a fine-grained GitHub token with **Issues: Read and write** access to
-`Sankofa06/LMManagerProFeedback`. After deploy, copy the Worker URL into the
-`feedback-submit-endpoint` meta tag in `feedback.html` and into LM Manager Pro's
-`FeedbackConstants.submitEndpoint`.
+`Sankofa06/LMManagerProFeedback`. After deploy, copy the Worker URL into LM
+Manager Pro's `FeedbackConstants.submitEndpoint`.
 
 ### Verify
 
@@ -116,12 +115,11 @@ Use a fine-grained GitHub token with **Issues: Read and write** access to
 - Open `…/privacy.html` and proofread.
 - Create a test issue with a 👍 reaction in the repo, then reload — it should
   appear at the top under the default "Top (👍)" sort.
-- Submit feedback through the modal and confirm a new GitHub issue appears
-  without signing in to GitHub.
+- Use Email Support and confirm the modal opens a private draft with the chosen
+  type, title, and details.
 - On `feedback.html`, DevTools → Network: reads go to
-  `api.github.com/repos/sankofa06/LMManagerProFeedback/issues`; submissions go
-  to the configured Cloudflare Worker. No fonts, no analytics, no third-party
-  scripts are loaded.
+  `api.github.com/repos/sankofa06/LMManagerProFeedback/issues`. No support text
+  is posted by the site, and no fonts, analytics, or third-party scripts load.
 
 ### Update App Store metadata
 
@@ -142,8 +140,8 @@ repo) and fill in:
 - Search and label filters are client-side over the fetched list.
 - Successful responses are cached in `sessionStorage` for 5 minutes to
   avoid hitting the rate limit on tab switches within a session.
-- "Submit Feedback" posts to the Cloudflare Worker, which creates the GitHub
-  issue server-side with a secret token.
+- "Email Support" opens a prefilled private draft in the visitor's email app;
+  nothing is sent until the visitor chooses Send.
 - Per-issue title and reaction links open `github.com` in a new tab for deeper
   discussion or GitHub-native reactions.
 

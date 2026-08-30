@@ -6,7 +6,6 @@
   <title>Support &amp; Feedback - LM Manager Pro</title>
   <meta name="description" content="Get support, report bugs, and request features for LM Manager Pro." />
   <meta name="color-scheme" content="light dark" />
-  <meta name="feedback-submit-endpoint" content="https://lmmp-feedback-submit.michael-d-williams13.workers.dev/submit-feedback" />
   <meta property="og:title" content="LM Manager Pro Support &amp; Feedback" />
   <meta property="og:description" content="Get support, report bugs, and request features for LM Manager Pro." />
   <meta property="og:type" content="website" />
@@ -40,17 +39,16 @@
         <span class="eyebrow">Support &amp; Feedback</span>
         <h1>Get help. Shape what ships next.</h1>
         <p class="tagline">
-          Report a bug, request a feature, or browse active feedback. You can
-          submit directly without needing a GitHub account.
+          Email support directly, or browse active public feedback. You do not
+          need a GitHub account to contact support.
         </p>
         <p class="service-notice" role="note">
           <strong>Support email:</strong>
           <a href="mailto:Michael.d.williams13@icloud.com">Michael.d.williams13@icloud.com</a>.
-          Feedback submissions become public GitHub issues so you can track
-          responses and see whether others have the same request.
+          Email stays private unless you separately choose to post on GitHub.
         </p>
         <div class="hero-actions">
-          <button id="submit-btn" class="btn primary">+ Submit Feedback</button>
+          <button id="submit-btn" class="btn primary">Email Support</button>
           <a class="btn ghost" href="privacy.html">View Privacy Policy</a>
         </div>
       </div>
@@ -133,7 +131,7 @@
 
     <dialog id="submit-modal" aria-labelledby="modal-title">
       <form id="submit-form">
-        <h2 id="modal-title">Submit Feedback</h2>
+        <h2 id="modal-title">Email Support</h2>
         <label>
           Type
           <select id="issue-type">
@@ -149,14 +147,10 @@
           Details <span class="optional">(optional)</span>
           <textarea id="issue-body" rows="5" placeholder="Steps to reproduce, expected behaviour, etc."></textarea>
         </label>
-        <label class="feedback-honeypot" aria-hidden="true">
-          Website
-          <input type="text" id="feedback-website" tabindex="-1" autocomplete="off" />
-        </label>
-        <p id="modal-error" class="modal-error" hidden></p>
+        <p>This opens a private draft in your email app. Nothing is sent until you choose Send.</p>
         <div class="modal-actions">
           <button type="button" id="modal-cancel" class="btn">Cancel</button>
-          <button type="submit" id="modal-submit" class="btn primary">Submit</button>
+          <button type="submit" id="modal-submit" class="btn primary">Open Email</button>
         </div>
       </form>
     </dialog>

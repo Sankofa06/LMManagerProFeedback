@@ -29,10 +29,8 @@ wrangler secret put GITHUB_TOKEN
 wrangler deploy
 ```
 
-5. Copy the deployed `workers.dev` URL into:
-
-- `feedback.html` as `meta[name="feedback-submit-endpoint"]`
-- LM Manager Pro's `FeedbackConstants.submitEndpoint`
+5. Copy the deployed `workers.dev` URL into LM Manager Pro's
+   `FeedbackConstants.submitEndpoint`.
 
 ## Local Tests
 

@@ -3,7 +3,7 @@
 
   const GH_OWNER = "sankofa06";
   const GH_REPO = "LMManagerProFeedback";
-  const SUBMIT_ENDPOINT = document.querySelector('meta[name="feedback-submit-endpoint"]')?.content || "";
+  const SUPPORT_EMAIL = "Michael.d.williams13@icloud.com";
   const REPO_URL = `https://github.com/${GH_OWNER}/${GH_REPO}`;
   const CACHE_KEY = `lmmp-feedback-cache-v1`;
   const CACHE_TTL_MS = 5 * 60 * 1000;
@@ -33,10 +33,7 @@
     issueType: document.getElementById("issue-type"),
     issueTitle: document.getElementById("issue-title"),
     issueBody: document.getElementById("issue-body"),
-    honeypot: document.getElementById("feedback-website"),
     modalCancel: document.getElementById("modal-cancel"),
-    modalSubmitBtn: document.getElementById("modal-submit"),
-    modalError: document.getElementById("modal-error"),
     summaryVisible: document.getElementById("summary-visible"),
     summaryOpen: document.getElementById("summary-open"),
     summaryClosed: document.getElementById("summary-closed"),
@@ -159,7 +156,7 @@
         `<li class="empty-state" style="grid-column: 1 / -1;">
           <h2>No matching feedback</h2>
           <p>Try a different filter, or open a new request if this hasn't been reported yet.</p>
-          <p><button class="btn primary" onclick="document.getElementById('submit-btn').click()">Submit Feedback</button></p>
+          <p><button class="btn primary" onclick="document.getElementById('submit-btn').click()">Email Support</button></p>
         </li>`
       );
       return;
@@ -251,9 +248,6 @@
 
   function openSubmitModal() {
     els.form.reset();
-    els.modalError.hidden = true;
-    els.modalSubmitBtn.disabled = false;
-    els.modalSubmitBtn.textContent = "Submit";
     els.modal.showModal();
     els.issueTitle.focus();
   }
@@ -262,7 +256,7 @@
     els.modal.close();
   }
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
 
     const title = els.issueTitle.value.trim();
@@ -270,50 +264,18 @@
     const type = els.issueType.value;
 
     if (!title) return;
-    if (!SUBMIT_ENDPOINT) {
-      els.modalError.textContent = "Feedback intake is not configured yet.";
-      els.modalError.hidden = false;
-      return;
-    }
 
-    els.modalSubmitBtn.disabled = true;
-    els.modalSubmitBtn.textContent = "Submitting…";
-    els.modalError.hidden = true;
+    const subject = `[LM Manager Pro ${type}] ${title}`;
+    const body = [
+      details,
+      "",
+      "---",
+      "Sent from LM Manager Pro Support & Feedback.",
+    ].join("\n");
+    const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-    try {
-      const res = await fetch(
-        SUBMIT_ENDPOINT,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type,
-            title,
-            details,
-            website: els.honeypot ? els.honeypot.value : "",
-            metadata: {
-              source: "feedback-site",
-              page: window.location.href,
-              userAgent: navigator.userAgent.slice(0, 180),
-            },
-          }),
-        }
-      );
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Feedback could not be submitted right now.");
-      }
-
-      closeModal();
-      sessionStorage.removeItem(CACHE_KEY);
-      setBanner("Feedback submitted! Refreshing list…");
-      await loadIssues();
-    } catch (err) {
-      els.modalError.textContent = `Failed to submit: ${err.message}`;
-      els.modalError.hidden = false;
-      els.modalSubmitBtn.disabled = false;
-      els.modalSubmitBtn.textContent = "Submit";
-    }
+    closeModal();
+    window.location.href = mailto;
   }
 
   /* ---------- helpers ---------- */

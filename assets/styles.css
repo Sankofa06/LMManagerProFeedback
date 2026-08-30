@@ -392,14 +392,6 @@ dialog textarea {
   color: var(--text);
 }
 
-.feedback-honeypot {
-  position: absolute;
-  left: -10000px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
 @media (prefers-color-scheme: dark) {
   .toolbar input[type="search"],
   .toolbar select,
@@ -669,12 +661,6 @@ dialog textarea:focus,
   justify-content: flex-end;
   gap: 10px;
   margin-top: 20px;
-}
-
-.modal-error {
-  margin: 10px 0 0;
-  color: var(--error);
-  font-size: 0.88rem;
 }
 
 .required { color: var(--error); }

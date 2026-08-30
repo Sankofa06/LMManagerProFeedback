@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-LM Manager Pro public website — landing page, feedback tracker, and privacy policy for the LM Manager Pro iOS app. Pure static pages with no build step, no dependencies, and no analytics. No-account feedback submission is relayed through the small Cloudflare Worker in `worker/`.
+LM Manager Pro public website — landing page, feedback tracker, and privacy policy for the LM Manager Pro iOS app. Pure static pages with no build step, no dependencies, and no analytics. Direct support opens a private email draft; public GitHub issues remain browseable.
 
 **Deployed URL:** `https://sankofa06.github.io/LMManagerProFeedback/`
 
@@ -17,7 +17,7 @@ Pure HTML / CSS / vanilla JS. No frameworks, no npm, no bundler.
 | File | Purpose |
 |---|---|
 | `index.html` | Product landing page |
-| `feedback.html` | Browse and submit feedback (GitHub Issues integration) |
+| `feedback.html` | Email support and browse public feedback |
 | `privacy.html` | Privacy Policy |
 
 Assets live in `assets/` (styles.css, feedback.js, icon.svg, screenshots/).
@@ -34,7 +34,7 @@ python3 -m http.server 8000
 
 ## How the Feedback Page Works
 
-`assets/feedback.js` calls `GET https://api.github.com/repos/sankofa06/LMManagerProFeedback/issues?state=all&per_page=100` with no auth (60 req/hr per IP). Pull requests are filtered client-side. Sort options: Top (👍), Newest, Most-discussed. Search and label filters are client-side. Responses cached in `sessionStorage` for 5 minutes. "Submit Feedback" posts JSON to the endpoint configured by `meta[name="feedback-submit-endpoint"]` in `feedback.html`; the Worker creates GitHub issues with its secret token. Per-issue titles and reaction chips open GitHub for deeper discussion or native reactions.
+`assets/feedback.js` calls `GET https://api.github.com/repos/sankofa06/LMManagerProFeedback/issues?state=all&per_page=100` with no auth (60 req/hr per IP). Pull requests are filtered client-side. Sort options: Top (👍), Newest, Most-discussed. Search and label filters are client-side. Responses are cached in `sessionStorage` for 5 minutes. "Email Support" opens a prefilled private draft in the visitor's email app. Per-issue titles and reaction chips open GitHub for deeper discussion or native reactions.
 
 ## Deployment
 
@@ -45,6 +45,6 @@ Issue templates live in `.github/ISSUE_TEMPLATE/` (bug_report.yml, feature_reque
 ## Constraints
 
 - No external fonts, analytics scripts, or third-party JS on the public support pages
-- Feedback reads go to GitHub's public Issues API; submissions go to the configured Cloudflare Worker
+- Feedback reads go to GitHub's public Issues API; direct support opens a private email draft
 - Privacy-first: no user tracking of any kind
 - Match the app's existing visual style when making design changes
