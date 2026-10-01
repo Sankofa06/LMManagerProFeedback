@@ -1,5 +1,9 @@
 # Repository Guidelines
 
+## Required Common Workforce
+
+This repository inherits the global `Common Workforce and Assurance Workflow` from `~/.codex/AGENTS.md`. Invoke the global `full-workforce` skill for explicit workforce requests and qualifying cross-system or release-critical Program work. The skill coordinates agents but does not widen this repository's authority or release boundaries.
+
 ## Project Structure & Module Organization
 This repository contains two static web surfaces with no build step. Root files `index.html`, `privacy.html`, and `assets/` power the public GitHub Pages feedback/privacy site. The browser app lives in `web/`, with markup in `web/index.html`, styles in `web/css/`, and ordered global scripts in `web/js/`.
 
