@@ -117,8 +117,12 @@
           <li>
             <strong>Local LM Studio servers:</strong> the app connects to machines you
             explicitly add — over your local network or your Tailscale VPN —
-            to load models and run inference. These connections never touch
-            the public internet.
+            to load models and run inference. When you use Tailscale, traffic may
+            cross the public internet and may be relayed through Tailscale DERP
+            servers while a direct connection is negotiated or when no direct or
+            peer-relay path is available. Tailscale says its direct and relayed
+            connection types remain end-to-end encrypted with WireGuard; see its
+            <a href="https://tailscale.com/docs/reference/connection-types" target="_blank" rel="noopener">connection type documentation</a>.
           </li>
           <li>
             <strong>Cloud AI providers (only when you choose a cloud model):</strong>
@@ -161,9 +165,13 @@
       <article class="surface policy-card">
         <h2>Voice features</h2>
         <p>
-          Speech-to-text (dictation) and text-to-speech use Apple's on-device
-          speech and synthesis frameworks. Voice data does not leave your
-          device for these features.
+          Speech-to-text uses Apple's Speech framework and English (U.S.)
+          recognizer. When Apple reports on-device recognition is supported for
+          that recognizer, the app requires it. Otherwise, the request is not
+          restricted to on-device processing, and Apple may process recognition
+          audio through its network service. See Apple's
+          <a href="https://developer.apple.com/documentation/speech/sfspeechrecognizer/supportsondevicerecognition" target="_blank" rel="noopener">on-device recognition documentation</a>.
+          Text-to-speech uses Apple's AVSpeechSynthesizer.
         </p>
       </article>
 
@@ -203,9 +211,15 @@
         <h2>Your data, your device</h2>
         <p>
           You can export your full dataset as JSON for backup or migration to a
-          new device, and import it back with one tap. Deleting the app from
-          your device removes all locally stored data, including Keychain entries
-          created by the app.
+          new device, and import it back with one tap. Deleting the app removes
+          its app-container data, but iOS may preserve Keychain items after
+          uninstall; Apple says this behavior is not specified by Keychain
+          documentation. Before uninstalling, clear LM Manager Pro credentials
+          from Settings by choosing Connections, Open Credential Actions,
+          Credential Reset, then Reset Known Credentials. This clears the
+          credentials managed by that action without deleting app data or model
+          records. See Apple's
+          <a href="https://developer.apple.com/forums/thread/36442" target="_blank" rel="noopener">Keychain uninstall discussion</a>.
         </p>
       </article>
 
@@ -228,7 +242,7 @@
       </article>
     </section>
 
-    <p class="updated">Last updated: October 4, 2026</p>
+    <p class="updated">Last updated: October 6, 2026</p>
   </main>
 
   <footer class="site-footer">
